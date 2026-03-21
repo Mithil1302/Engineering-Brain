@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "analysis.jobs",
+  "type": "object",
+  "required": ["schema_version", "idempotency_key", "correlation_id", "produced_at", "job_type"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "idempotency_key": { "type": "string", "description": "job hash" },
+    "correlation_id": { "type": "string" },
+    "produced_at": { "type": "string", "format": "date-time" },
+    "job_type": { "type": "string", "enum": ["drift", "impact", "embed_refresh"] },
+    "target": {
+      "type": "object",
+      "properties": {
+        "repo": { "type": "string" },
+        "service_id": { "type": "string" },
+        "endpoint_id": { "type": "string" },
+        "spec_hash": { "type": "string" },
+        "schema_hash": { "type": "string" }
+      }
+    },
+    "parameters": { "type": "object" }
+  }
+}

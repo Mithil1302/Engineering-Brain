@@ -1,0 +1,15 @@
+{
+  "name": "proto-tools",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "gen:node": "npm run clean:node && npx mkdirp node && npx grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./node --grpc_out=grpc_js:./node --proto_path=. services.proto",
+    "clean:node": "rimraf node"
+  },
+  "devDependencies": {
+    "grpc-tools": "^1.12.4",
+    "grpc_tools_node_protoc_ts": "^5.3.3",
+    "rimraf": "^5.0.5",
+    "mkdirp": "^3.0.1"
+  }
+}

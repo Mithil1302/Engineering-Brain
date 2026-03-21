@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "agent.requests",
+  "type": "object",
+  "required": ["schema_version", "idempotency_key", "correlation_id", "produced_at", "agent_type", "task"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "idempotency_key": { "type": "string" },
+    "correlation_id": { "type": "string" },
+    "produced_at": { "type": "string", "format": "date-time" },
+    "agent_type": { "type": "string", "enum": ["impact", "architecture", "doc", "self_healing"] },
+    "task": { "type": "string" },
+    "context_refs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Graph entity IDs or URIs for context"
+    },
+    "options": { "type": "object" }
+  }
+}

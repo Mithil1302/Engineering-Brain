@@ -1,0 +1,252 @@
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    restart: on-failure
+    depends_on:
+      zookeeper:
+        condition: service_started
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      kafka:
+        condition: service_healthy
+    volumes:
+      - ./infra/kafka/create-topics.sh:/scripts/create-topics.sh:ro
+    environment:
+      KAFKA_BOOTSTRAP_SERVER: kafka:9092
+    command: ["bash", "/scripts/create-topics.sh"]
+
+  neo4j:
+    image: neo4j:5.10
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-testtest}
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -a bolt://localhost:7687 -u ${NEO4J_USER:-neo4j} -p ${NEO4J_PASSWORD:-testtest} \"RETURN 1;\" >/dev/null 2>&1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  qdrant:
+    image: qdrant/qdrant:v1.7.3
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-brain}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brain}
+      POSTGRES_DB: ${POSTGRES_DB:-brain}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  api-gateway:
+    build: ./api-gateway
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+      neo4j:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      ingestion-service:
+        condition: service_healthy
+      graph-service:
+        condition: service_healthy
+      agent-service:
+        condition: service_healthy
+      worker-service:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    environment:
+      PORT: 3000
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://host.docker.internal:4318}
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  ingestion-service:
+    build: ./ingestion-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      PORT: 3001
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://host.docker.internal:4318}
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_SOURCE_TOPIC: repo.events
+      KAFKA_DLQ_TOPIC: repo.events.dlq
+      GRAPH_UPDATES_TOPIC: graph.updates
+      ANALYSIS_JOBS_TOPIC: analysis.jobs
+      KAFKA_CONSUMER_GROUP: ingestion-service-v1
+      GRAPH_GRPC_TARGET: graph-service:50051
+      MAX_PROCESS_RETRIES: 3
+      RETRY_BASE_DELAY_MS: 500
+      REPLAY_DEFAULT_BATCH_SIZE: 100
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-brain}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brain}
+      POSTGRES_DB: ${POSTGRES_DB:-brain}
+      POSTGRES_POOL_MAX: 10
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3001/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  graph-service:
+    build: ./graph-service
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    environment:
+      PORT: 8001
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://host.docker.internal:4318}
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: ${NEO4J_USER:-neo4j}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-testtest}
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8001/healthz').status==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  agent-service:
+    build: ./agent-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      PORT: 8002
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://host.docker.internal:4318}
+      GITHUB_BRIDGE_ENABLED: ${GITHUB_BRIDGE_ENABLED:-true}
+      GITHUB_BRIDGE_INPUT_TOPIC: pr.checks
+      GITHUB_BRIDGE_DLQ_TOPIC: pr.checks.dlq
+      GITHUB_BRIDGE_CONSUMER_GROUP: agent-github-bridge-v1
+      KAFKA_BROKERS: kafka:9092
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-brain}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brain}
+      POSTGRES_DB: ${POSTGRES_DB:-brain}
+      GITHUB_API_BASE_URL: ${GITHUB_API_BASE_URL:-https://api.github.com}
+      GITHUB_APP_ID: ${GITHUB_APP_ID:-}
+      GITHUB_INSTALLATION_ID: ${GITHUB_INSTALLATION_ID:-}
+      GITHUB_TARGET_REPO: ${GITHUB_TARGET_REPO:-}
+      GITHUB_CHECK_NAME: ${GITHUB_CHECK_NAME:-KA-CHOW Policy Gate}
+      GITHUB_DELIVERY_MAX_ATTEMPTS: ${GITHUB_DELIVERY_MAX_ATTEMPTS:-3}
+      GITHUB_DELIVERY_RETRY_BASE_DELAY_MS: ${GITHUB_DELIVERY_RETRY_BASE_DELAY_MS:-500}
+      GITHUB_BRIDGE_ADMIN_TOKEN: ${GITHUB_BRIDGE_ADMIN_TOKEN:-}
+      GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET:-}
+      TENANT_METADATA_ENCRYPTION_KEY: ${TENANT_METADATA_ENCRYPTION_KEY:-}
+      GITHUB_TENANT_RATE_LIMIT_PER_MINUTE: ${GITHUB_TENANT_RATE_LIMIT_PER_MINUTE:-120}
+      GITHUB_TENANT_CIRCUIT_BREAKER_FAILURE_THRESHOLD: ${GITHUB_TENANT_CIRCUIT_BREAKER_FAILURE_THRESHOLD:-5}
+      GITHUB_TENANT_CIRCUIT_BREAKER_COOLDOWN_SEC: ${GITHUB_TENANT_CIRCUIT_BREAKER_COOLDOWN_SEC:-120}
+      GITHUB_APP_PRIVATE_KEY_PATH: /run/secrets/github_app.pem
+    volumes:
+      - ${GITHUB_APP_PRIVATE_KEY_FILE:-./eng-brain.2026-03-20.private-key.pem}:/run/secrets/github_app.pem:ro
+    ports:
+      - "8002:8002"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8002/healthz').status==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  worker-service:
+    build: ./worker-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      PORT: 8003
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://host.docker.internal:4318}
+      POLICY_PIPELINE_ENABLED: "true"
+      POLICY_INPUT_TOPIC: repo.events
+      POLICY_OUTPUT_TOPIC: pr.checks
+      POLICY_CONSUMER_GROUP: worker-policy-checks-v1
+      POLICY_RULE_SET: rules-v1
+      POLICY_DEFAULT_SERVICE_ID: unknown-service
+      KAFKA_BROKERS: kafka:9092
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-brain}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brain}
+      POSTGRES_DB: ${POSTGRES_DB:-brain}
+    ports:
+      - "8003:8003"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8003/healthz').status==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  neo4j_data:
+  qdrant_data:
+  pg_data:

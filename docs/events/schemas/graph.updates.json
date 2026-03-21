@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "graph.updates",
+  "type": "object",
+  "required": ["schema_version", "idempotency_key", "correlation_id", "produced_at", "mutations"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "idempotency_key": { "type": "string", "description": "Derived from applied mutation batch hash" },
+    "correlation_id": { "type": "string" },
+    "produced_at": { "type": "string", "format": "date-time" },
+    "mutations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "entity_id"],
+        "properties": {
+          "type": { "type": "string", "enum": ["create_node", "update_node", "delete_node", "create_edge", "update_edge", "delete_edge"] },
+          "entity_kind": { "type": "string", "description": "service|endpoint|model|field|test|doc|incident|deployment|message" },
+          "entity_id": { "type": "string" },
+          "payload": { "type": "object" },
+          "valid_from": { "type": "string", "format": "date-time" },
+          "valid_to": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}

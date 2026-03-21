@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "repo.events",
+  "type": "object",
+  "required": ["schema_version", "idempotency_key", "correlation_id", "produced_at", "repo", "event_type"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "idempotency_key": { "type": "string", "description": "Commit SHA or PR+head SHA" },
+    "correlation_id": { "type": "string" },
+    "produced_at": { "type": "string", "format": "date-time" },
+    "tenant_id": { "type": "string", "description": "Tenant identifier for multi-tenant routing." },
+    "installation_id": { "type": "string", "description": "GitHub App installation id for tenant-scoped delivery." },
+    "tenant": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "installation_id": { "type": "string" },
+        "org": { "type": "string" }
+      }
+    },
+    "repo": {
+      "type": "object",
+      "required": ["id", "url", "default_branch"],
+      "properties": {
+        "id": { "type": "string" },
+        "full_name": { "type": "string", "description": "owner/repo" },
+        "url": { "type": "string" },
+        "default_branch": { "type": "string" }
+      }
+    },
+    "event_type": { "type": "string", "enum": ["commit", "pull_request", "spec", "schema", "doc", "incident"] },
+    "commit": {
+      "type": "object",
+      "properties": {
+        "sha": { "type": "string" },
+        "message": { "type": "string" },
+        "author": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "pull_request": {
+      "type": "object",
+      "properties": {
+        "number": { "type": "integer" },
+        "head_sha": { "type": "string" },
+        "base_sha": { "type": "string" },
+        "title": { "type": "string" },
+        "author": { "type": "string" }
+      }
+    },
+    "changed_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "status"],
+        "properties": {
+          "path": { "type": "string" },
+          "status": { "type": "string", "enum": ["added", "modified", "removed"] },
+          "patch_url": { "type": "string" },
+          "blob_url": { "type": "string" }
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string" },
+        "hash": { "type": "string" },
+        "uri": { "type": "string" },
+        "kind": { "type": "string", "enum": ["openapi", "asyncapi"] }
+      }
+    },
+    "db_schema": {
+      "type": "object",
+      "properties": {
+        "hash": { "type": "string" },
+        "uri": { "type": "string" },
+        "db": { "type": "string" },
+        "schema": { "type": "string" }
+      }
+    },
+    "doc": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string" },
+        "hash": { "type": "string" },
+        "uri": { "type": "string" }
+      }
+    },
+    "incident": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "severity": { "type": "string" },
+        "opened_at": { "type": "string", "format": "date-time" },
+        "closed_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

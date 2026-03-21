@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package kabrain;
+
+service GraphService {
+  rpc ApplyMutations(ApplyMutationsRequest) returns (ApplyMutationsResponse);
+}
+
+service HealthService {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+message ApplyMutationsRequest {
+  repeated Mutation mutations = 1;
+}
+
+message ApplyMutationsResponse {
+  bool accepted = 1;
+}
+
+message Mutation {
+  string type = 1; // create_node|update_node|delete_node|create_edge|update_edge|delete_edge
+  string entity_kind = 2; // service|endpoint|model|field|test|doc|incident|deployment|message
+  string entity_id = 3;
+  string payload_json = 4; // serialized payload
+  string valid_from = 5; // RFC3339
+  string valid_to = 6; // RFC3339
+}
+
+service AnalysisService {
+  rpc EnqueueJob(EnqueueJobRequest) returns (EnqueueJobResponse);
+}
+
+message EnqueueJobRequest {
+  string job_type = 1; // drift|impact|embed_refresh
+  Target target = 2;
+  string idempotency_key = 3;
+}
+
+message EnqueueJobResponse {
+  bool accepted = 1;
+}
+
+message Target {
+  string repo = 1;
+  string service_id = 2;
+  string endpoint_id = 3;
+  string spec_hash = 4;
+  string schema_hash = 5;
+}
+
+service AgentService {
+  rpc SubmitAgentTask(SubmitAgentTaskRequest) returns (SubmitAgentTaskResponse);
+}
+
+message SubmitAgentTaskRequest {
+  string agent_type = 1; // impact|architecture|doc|self_healing
+  string task = 2;
+  repeated string context_refs = 3; // graph IDs or URIs
+  string idempotency_key = 4;
+}
+
+message SubmitAgentTaskResponse {
+  bool accepted = 1;
+}
+
+message HealthCheckRequest {
+  string service = 1; // optional: target service name
+}
+
+message HealthCheckResponse {
+  string status = 1; // SERVING|NOT_SERVING
+}
