@@ -9,6 +9,9 @@ TOPICS=(
   "analysis.jobs"
   "pr.checks"
   "pr.checks.dlq"
+  "docs.refresh"
+  "docs.rewrite"
+  "architecture.plans"
   "agent.requests"
   "ci.events"
 )

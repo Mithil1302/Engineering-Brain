@@ -63,6 +63,7 @@ class RuleConfig(BaseModel):
 
 
 class PolicyConfig(BaseModel):
+    rule_pack: Optional[str] = Field(default=None, description="Policy pack id override, e.g. rules-v1")
     rules: Dict[str, RuleConfig] = Field(default_factory=dict)
 
 

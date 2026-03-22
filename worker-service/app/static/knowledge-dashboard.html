@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>System Knowledge Health Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root { --bg:#0b1020; --card:#121931; --muted:#9aa6c7; --text:#eef3ff; --accent:#6ea8fe; }
+    body { margin:0; font-family:Segoe UI, Arial, sans-serif; background:var(--bg); color:var(--text); }
+    .wrap { max-width:1300px; margin:24px auto; padding:0 16px; }
+    h1 { margin:0 0 8px; }
+    .sub { color:var(--muted); margin-bottom:16px; }
+    .controls { display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:10px; margin-bottom:16px; }
+    input, button { border-radius:8px; border:1px solid #2a355f; background:#0f1530; color:var(--text); padding:10px; }
+    button { background:var(--accent); color:#061028; font-weight:700; cursor:pointer; }
+    .grid { display:grid; grid-template-columns:2fr 1fr; gap:14px; }
+    .card { background:var(--card); border:1px solid #25305a; border-radius:12px; padding:12px; }
+    .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+    .kpi { background:#0f1530; border:1px solid #25305a; border-radius:10px; padding:10px; }
+    .kpi .label{ color:var(--muted); font-size:12px; }
+    .kpi .value{ font-size:22px; font-weight:700; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { border-bottom:1px solid #24305b; padding:8px; text-align:left; font-size:13px; }
+    th { color:var(--muted); }
+    .pill { display:inline-block; padding:3px 8px; border-radius:999px; font-size:12px; }
+    .ok { background:#153a22; color:#8ff0b0; }
+    .warn { background:#3a3215; color:#f8e38c; }
+    .bad { background:#3a1515; color:#ffaaaa; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>System Knowledge Health Dashboard</h1>
+    <div class="sub">Interactive policy, docs and knowledge-health timeline</div>
+
+    <div class="controls">
+      <input id="repo" value="Mithil1302/Pre-Delinquency-Intervention-Engine" placeholder="repo (owner/name)" />
+      <input id="pr" value="2" placeholder="PR number" />
+      <input id="window" value="20" placeholder="window" />
+      <button id="refresh">Refresh</button>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="label">Latest Score</div><div id="kpi-score" class="value">-</div></div>
+      <div class="kpi"><div class="label">Latest Grade</div><div id="kpi-grade" class="value">-</div></div>
+      <div class="kpi"><div class="label">Average Score</div><div id="kpi-avg" class="value">-</div></div>
+      <div class="kpi"><div class="label">Trend Points</div><div id="kpi-points" class="value">-</div></div>
+    </div>
+
+    <div class="grid" style="margin-top:14px;">
+      <div class="card">
+        <h3>Knowledge Health Timeline</h3>
+        <canvas id="scoreChart" height="120"></canvas>
+      </div>
+      <div class="card">
+        <h3>Policy Action Distribution</h3>
+        <canvas id="actionChart" height="120"></canvas>
+      </div>
+      <div class="card">
+        <h3>Doc Rewrite Runs</h3>
+        <table>
+          <thead><tr><th>ID</th><th>Status</th><th>Reason</th><th>Score</th><th>Created</th></tr></thead>
+          <tbody id="rewriteRows"></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Doc Refresh Jobs</h3>
+        <table>
+          <thead><tr><th>ID</th><th>Decision</th><th>Priority</th><th>Action</th><th>Created</th></tr></thead>
+          <tbody id="docRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let scoreChart, actionChart;
+
+    function badge(status){
+      if(status === 'emitted' || status === 'approved') return 'pill ok';
+      if(status === 'conflict' || status === 'rejected' || status === 'block') return 'pill bad';
+      return 'pill warn';
+    }
+
+    async function getJson(url){
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('Request failed: '+url);
+      return res.json();
+    }
+
+    function renderCharts(overview){
+      const trend = overview.trend || [];
+      const labels = trend.map(x => String(x.id)).reverse();
+      const scores = trend.map(x => x.score).reverse();
+
+      if(scoreChart) scoreChart.destroy();
+      scoreChart = new Chart(document.getElementById('scoreChart'), {
+        type:'line',
+        data:{ labels, datasets:[{ label:'Health Score', data:scores, borderColor:'#6ea8fe', backgroundColor:'rgba(110,168,254,0.2)', tension:0.25 }]},
+        options:{ plugins:{legend:{labels:{color:'#eef3ff'}}}, scales:{ x:{ticks:{color:'#9aa6c7'}}, y:{ticks:{color:'#9aa6c7'}, min:0, max:100} } }
+      });
+
+      const actions = overview.metrics?.policy_actions || {};
+      if(actionChart) actionChart.destroy();
+      actionChart = new Chart(document.getElementById('actionChart'), {
+        type:'doughnut',
+        data:{ labels:Object.keys(actions), datasets:[{ data:Object.values(actions), backgroundColor:['#6ea8fe','#f8e38c','#8ff0b0','#ffaaaa'] }]},
+        options:{ plugins:{legend:{labels:{color:'#eef3ff'}}} }
+      });
+    }
+
+    function renderTable(rowsEl, items, cols){
+      rowsEl.innerHTML = '';
+      for(const it of items){
+        const tr = document.createElement('tr');
+        tr.innerHTML = cols.map(c => `<td>${c(it)}</td>`).join('');
+        rowsEl.appendChild(tr);
+      }
+    }
+
+    async function load(){
+      const repo = encodeURIComponent(document.getElementById('repo').value.trim());
+      const pr = encodeURIComponent(document.getElementById('pr').value.trim());
+      const window = encodeURIComponent(document.getElementById('window').value.trim());
+
+      const overview = await getJson(`/policy/dashboard/overview?repo=${repo}&pr_number=${pr}&window=${window}`);
+      const docJobs = await getJson(`/policy/dashboard/doc-refresh-jobs?repo=${repo}&pr_number=${pr}&limit=15`);
+      const rewrites = await getJson(`/policy/dashboard/doc-rewrite-runs?repo=${repo}&pr_number=${pr}&limit=15`);
+
+      document.getElementById('kpi-score').textContent = overview.latest_snapshot?.score ?? '-';
+      document.getElementById('kpi-grade').textContent = overview.latest_snapshot?.grade ?? '-';
+      document.getElementById('kpi-avg').textContent = overview.metrics?.avg_score ?? '-';
+      document.getElementById('kpi-points').textContent = overview.metrics?.trend_points ?? '-';
+
+      renderCharts(overview);
+
+      renderTable(
+        document.getElementById('docRows'),
+        docJobs.items || [],
+        [
+          x => x.id,
+          x => `<span class="${badge(x.decision)}">${x.decision}</span>`,
+          x => x.priority,
+          x => x.action,
+          x => x.created_at,
+        ]
+      );
+
+      renderTable(
+        document.getElementById('rewriteRows'),
+        rewrites.items || [],
+        [
+          x => x.id,
+          x => `<span class="${badge(x.status)}">${x.status}</span>`,
+          x => x.reason || '-',
+          x => x.quality_gate_score ?? '-',
+          x => x.created_at,
+        ]
+      );
+    }
+
+    document.getElementById('refresh').addEventListener('click', load);
+    load();
+  </script>
+</body>
+</html>

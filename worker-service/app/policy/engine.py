@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections import defaultdict, deque
-from typing import Dict, List, Optional, Set, Tuple
+from dataclasses import dataclass
+from typing import Callable, Dict, List, Optional, Set, Tuple
 
 from .models import (
     CheckStatus,
@@ -27,8 +28,18 @@ DEFAULT_RULES: Dict[str, RuleConfig] = {
 }
 
 
-def _merge_rule_config(request: PolicyEvaluationRequest) -> Dict[str, RuleConfig]:
-    merged = {k: RuleConfig(**v.model_dump()) for k, v in DEFAULT_RULES.items()}
+PolicyCheck = Callable[[PolicyEvaluationRequest, Dict[str, RuleConfig]], List[Finding]]
+
+
+@dataclass(frozen=True)
+class PolicyPackDefinition:
+    pack_id: str
+    default_rules: Dict[str, RuleConfig]
+    checks: List[Tuple[str, PolicyCheck]]
+
+
+def _merge_rule_config(request: PolicyEvaluationRequest, base_rules: Dict[str, RuleConfig]) -> Dict[str, RuleConfig]:
+    merged = {k: RuleConfig(**v.model_dump()) for k, v in base_rules.items()}
     if request.config and request.config.rules:
         for key, val in request.config.rules.items():
             merged[key] = val
@@ -317,16 +328,61 @@ def summary_status(findings: List[Finding]) -> CheckStatus:
     return CheckStatus.PASS
 
 
-def evaluate_policies(request: PolicyEvaluationRequest) -> List[Finding]:
-    rules = _merge_rule_config(request)
+def _policy_pack_registry() -> Dict[str, PolicyPackDefinition]:
+    rules_v1_checks: List[Tuple[str, PolicyCheck]] = [
+        ("BREAKING_PATH_METHOD_REMOVAL", _check_path_method_removal),
+        ("BREAKING_REQUEST_TIGHTENING", _check_request_tightening),
+        ("BREAKING_RESPONSE_CHANGE", _check_response_change),
+        ("BREAKING_STATUS_CODE_REMOVAL", _check_status_code_removal),
+        ("DOC_DRIFT_ENDPOINT_CHANGED_NO_DOC", _check_doc_drift_no_doc),
+        ("DOC_DRIFT_MISSING_OWNER", _check_missing_owner),
+        ("IMPACT_PROPAGATION", _check_impact_propagation),
+    ]
+
+    return {
+        "rules-v1": PolicyPackDefinition(
+            pack_id="rules-v1",
+            default_rules=DEFAULT_RULES,
+            checks=rules_v1_checks,
+        )
+    }
+
+
+def resolve_policy_pack(rule_set: str) -> PolicyPackDefinition:
+    registry = _policy_pack_registry()
+    if rule_set not in registry:
+        supported = ", ".join(sorted(registry.keys()))
+        raise ValueError(f"Unsupported policy rule_set '{rule_set}'. Supported: {supported}")
+    return registry[rule_set]
+
+
+def evaluate_policies_with_meta(request: PolicyEvaluationRequest, *, rule_set: str = "rules-v1") -> Tuple[List[Finding], Dict[str, object]]:
+    pack = resolve_policy_pack(rule_set)
+    rules = _merge_rule_config(request, pack.default_rules)
+
     findings: List[Finding] = []
+    executed_rules: List[str] = []
 
-    findings.extend(_check_path_method_removal(request, rules))
-    findings.extend(_check_request_tightening(request, rules))
-    findings.extend(_check_response_change(request, rules))
-    findings.extend(_check_status_code_removal(request, rules))
-    findings.extend(_check_doc_drift_no_doc(request, rules))
-    findings.extend(_check_missing_owner(request, rules))
-    findings.extend(_check_impact_propagation(request, rules))
+    for rule_id, check_fn in pack.checks:
+        executed_rules.append(rule_id)
+        findings.extend(check_fn(request, rules))
 
+    enabled_rules = sorted([k for k, v in rules.items() if v.enabled])
+    disabled_rules = sorted([k for k, v in rules.items() if not v.enabled])
+
+    meta: Dict[str, object] = {
+        "rule_set": pack.pack_id,
+        "executed_rules": executed_rules,
+        "enabled_rules": enabled_rules,
+        "disabled_rules": disabled_rules,
+    }
+    return findings, meta
+
+
+def evaluate_policies(request: PolicyEvaluationRequest, *, rule_set: str = "rules-v1") -> List[Finding]:
+    findings, _ = evaluate_policies_with_meta(request, rule_set=rule_set)
     return findings
+
+
+def list_policy_packs() -> List[str]:
+    return sorted(_policy_pack_registry().keys())

@@ -115,11 +115,50 @@ CREATE TABLE IF NOT EXISTS meta.policy_check_runs (
   markdown_comment TEXT NOT NULL,
   suggested_patches JSONB,
   check_annotations JSONB,
+  merge_gate JSONB,
+  doc_refresh_plan JSONB,
+  knowledge_health JSONB,
   action TEXT NOT NULL,
   deduped BOOLEAN NOT NULL DEFAULT FALSE,
   comment_state_id BIGINT REFERENCES meta.pr_comment_state(id),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE meta.policy_check_runs ADD COLUMN IF NOT EXISTS merge_gate JSONB;
+ALTER TABLE meta.policy_check_runs ADD COLUMN IF NOT EXISTS doc_refresh_plan JSONB;
+ALTER TABLE meta.policy_check_runs ADD COLUMN IF NOT EXISTS knowledge_health JSONB;
+
+CREATE TABLE IF NOT EXISTS meta.doc_refresh_jobs (
+  id BIGSERIAL PRIMARY KEY,
+  repo TEXT NOT NULL,
+  pr_number BIGINT NOT NULL,
+  correlation_id TEXT,
+  idempotency_key TEXT,
+  rule_set TEXT,
+  action TEXT NOT NULL,
+  decision TEXT NOT NULL,
+  priority TEXT,
+  plan JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_doc_refresh_jobs_repo_pr_created ON meta.doc_refresh_jobs (repo, pr_number, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS meta.knowledge_health_snapshots (
+  id BIGSERIAL PRIMARY KEY,
+  repo TEXT NOT NULL,
+  pr_number BIGINT,
+  correlation_id TEXT,
+  idempotency_key TEXT,
+  rule_set TEXT,
+  summary_status TEXT,
+  score NUMERIC(6,2) NOT NULL,
+  grade TEXT NOT NULL,
+  snapshot JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_knowledge_health_repo_pr_created ON meta.knowledge_health_snapshots (repo, pr_number, created_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_pr_comment_state_repo_pr ON meta.pr_comment_state (repo, pr_number);
 CREATE INDEX IF NOT EXISTS idx_policy_runs_repo_pr_created ON meta.policy_check_runs (repo, pr_number, created_at DESC);
@@ -176,3 +215,54 @@ CREATE TABLE IF NOT EXISTS meta.tenant_installations (
 );
 
 CREATE INDEX IF NOT EXISTS idx_tenant_installations_tenant_repo ON meta.tenant_installations (tenant_id, repo_full_name);
+
+CREATE TABLE IF NOT EXISTS meta.architecture_plan_runs (
+  id BIGSERIAL PRIMARY KEY,
+  repo TEXT NOT NULL,
+  pr_number BIGINT,
+  correlation_id TEXT,
+  plan_id TEXT NOT NULL,
+  intent_tags JSONB,
+  requirement JSONB NOT NULL,
+  decisions JSONB NOT NULL,
+  services JSONB NOT NULL,
+  infrastructure JSONB NOT NULL,
+  artifacts JSONB NOT NULL,
+  status TEXT NOT NULL DEFAULT 'planned',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_arch_plan_runs_repo_pr_created ON meta.architecture_plan_runs (repo, pr_number, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS meta.onboarding_paths (
+  id BIGSERIAL PRIMARY KEY,
+  repo TEXT NOT NULL,
+  pr_number BIGINT,
+  role TEXT NOT NULL,
+  path JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS meta.simulation_runs (
+  id BIGSERIAL PRIMARY KEY,
+  repo TEXT NOT NULL,
+  pr_number BIGINT,
+  horizon INT NOT NULL,
+  result JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS meta.autofix_runs (
+  id BIGSERIAL PRIMARY KEY,
+  repo TEXT NOT NULL,
+  pr_number BIGINT,
+  workflow JSONB NOT NULL,
+  status TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_onboarding_repo_pr_created ON meta.onboarding_paths (repo, pr_number, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_simulation_repo_pr_created ON meta.simulation_runs (repo, pr_number, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_autofix_repo_pr_created ON meta.autofix_runs (repo, pr_number, created_at DESC);
