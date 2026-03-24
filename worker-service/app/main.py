@@ -4,6 +4,7 @@ from .otel_setup import setup_otel
 import logging
 
 from .dependencies import pipeline
+from fastapi.staticfiles import StaticFiles
 
 from .policy.routes_admin import router as policy_admin_router
 from .policy.routes_dash import router as policy_dash_router
@@ -38,3 +39,5 @@ app.include_router(qa_router)
 app.include_router(onboarding_router)
 app.include_router(simulation_router)
 app.include_router(autofix_router)
+
+app.mount("/static", StaticFiles(directory="/app/app/static"), name="static")

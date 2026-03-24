@@ -143,6 +143,9 @@ class PolicyPipeline:
     # DB connection
     # ------------------------------------------------------------------
 
+    def _emit_retry_idempotency_key(self, base_key: str, repo: str, pr_number: int, rule_set: str, emit_type: str) -> str:
+        return f"retry:{emit_type}:{repo}:{pr_number}:{rule_set}:{base_key}"
+
     def _db_conn(self):
         return psycopg2.connect(**self.pg_cfg)
 

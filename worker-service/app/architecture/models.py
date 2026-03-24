@@ -64,3 +64,5 @@ class ArchitecturePlanResponse(BaseModel):
     pr_number: Optional[int] = None
     correlation_id: Optional[str] = None
     plan: ArchitecturePlan
+
+PlanArtifact = ScaffoldArtifact
