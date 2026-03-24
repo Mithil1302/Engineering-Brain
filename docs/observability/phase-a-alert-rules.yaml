@@ -1,0 +1,39 @@
+groups:
+  - name: engbrain-phasea-ops
+    interval: 30s
+    rules:
+      - alert: EmitRetryFailureRateSpike
+        expr: |
+          emit_retry_failure_rate_pct >= 20
+        for: 2m
+        labels:
+          severity: warning
+          service: worker-service
+          phase: week3-phasea
+        annotations:
+          summary: "Emit retry failure rate spike"
+          description: "Failure rate exceeded threshold for emit retry pipeline. Investigate retry queue and delivery failures."
+
+      - alert: EmitRetryBacklogGrowth
+        expr: |
+          emit_retry_backlog_total >= 20 and emit_retry_backlog_delta >= 10
+        for: 3m
+        labels:
+          severity: critical
+          service: worker-service
+          phase: week3-phasea
+        annotations:
+          summary: "Emit retry backlog growth"
+          description: "Retry backlog is growing and exceeds baseline threshold. Check downstream delivery and broker health."
+
+      - alert: EmitDeliveryFailures
+        expr: |
+          emit_retry_delivery_failures_window >= 3
+        for: 1m
+        labels:
+          severity: critical
+          service: worker-service
+          phase: week3-phasea
+        annotations:
+          summary: "Emit delivery failures detected"
+          description: "Delivery failures crossed threshold in current evaluation window. Trigger poison-pill triage and replay workflow."

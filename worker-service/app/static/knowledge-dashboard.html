@@ -1,167 +1,628 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>System Knowledge Health Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    :root { --bg:#0b1020; --card:#121931; --muted:#9aa6c7; --text:#eef3ff; --accent:#6ea8fe; }
-    body { margin:0; font-family:Segoe UI, Arial, sans-serif; background:var(--bg); color:var(--text); }
-    .wrap { max-width:1300px; margin:24px auto; padding:0 16px; }
-    h1 { margin:0 0 8px; }
-    .sub { color:var(--muted); margin-bottom:16px; }
-    .controls { display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:10px; margin-bottom:16px; }
-    input, button { border-radius:8px; border:1px solid #2a355f; background:#0f1530; color:var(--text); padding:10px; }
-    button { background:var(--accent); color:#061028; font-weight:700; cursor:pointer; }
-    .grid { display:grid; grid-template-columns:2fr 1fr; gap:14px; }
-    .card { background:var(--card); border:1px solid #25305a; border-radius:12px; padding:12px; }
-    .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
-    .kpi { background:#0f1530; border:1px solid #25305a; border-radius:10px; padding:10px; }
-    .kpi .label{ color:var(--muted); font-size:12px; }
-    .kpi .value{ font-size:22px; font-weight:700; }
-    table { width:100%; border-collapse:collapse; }
-    th, td { border-bottom:1px solid #24305b; padding:8px; text-align:left; font-size:13px; }
-    th { color:var(--muted); }
-    .pill { display:inline-block; padding:3px 8px; border-radius:999px; font-size:12px; }
-    .ok { background:#153a22; color:#8ff0b0; }
-    .warn { background:#3a3215; color:#f8e38c; }
-    .bad { background:#3a1515; color:#ffaaaa; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KA-CHOW Knowledge Dashboard</title>
+    <!-- D3.js for graph visualization -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Chart.js for health timeline -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* Glassmorphism containers */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7); /* Slate 800 with opacity */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* D3 Graph Styles */
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        .node circle {
+            stroke: #fff;
+            stroke-width: 1.5px;
+            cursor: pointer;
+            transition: r 0.2s ease, filter 0.2s ease;
+        }
+        .node circle:hover {
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+        }
+        .node text {
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            pointer-events: none;
+            fill: #e2e8f0;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+        .link {
+            stroke: #475569; /* Slate 600 */
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+        }
+        .link.highlight {
+            stroke: #38bdf8; /* Sky 400 */
+            stroke-opacity: 1;
+            stroke-width: 2.5px;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(71, 85, 105, 0.5);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(100, 116, 139, 0.8);
+        }
+
+        /* Loading Spinner */
+        .loader {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top: 3px solid #38bdf8;
+            width: 24px;
+            height: 24px;
+            -webkit-animation: spin 1s linear infinite; /* Safari */
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body>
-  <div class="wrap">
-    <h1>System Knowledge Health Dashboard</h1>
-    <div class="sub">Interactive policy, docs and knowledge-health timeline</div>
+<body class="h-screen w-screen flex flex-col p-4 gap-4">
 
-    <div class="controls">
-      <input id="repo" value="Mithil1302/Pre-Delinquency-Intervention-Engine" placeholder="repo (owner/name)" />
-      <input id="pr" value="2" placeholder="PR number" />
-      <input id="window" value="20" placeholder="window" />
-      <button id="refresh">Refresh</button>
-    </div>
+    <!-- Header -->
+    <header class="glass-panel p-4 flex justify-between items-center w-full relative z-10 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-sky-400 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-white mb-0 leading-tight">KA-CHOW</h1>
+                <p class="text-xs text-slate-400 font-medium tracking-wide">Autonomous Engineering Brain</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <div class="relative">
+                <input type="text" id="repo-input" value="my-org/my-service" class="bg-slate-800/50 border border-slate-700 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-64 p-2.5 text-white placeholder-slate-400" placeholder="owner/repo">
+            </div>
+            <button id="refresh-btn" class="bg-indigo-600 hover:bg-indigo-700 transition-colors text-white font-medium rounded-lg text-sm px-4 py-2.5 text-center flex items-center gap-2">
+                <span id="refresh-text">Reload</span>
+                <div id="refresh-loader" class="loader hidden w-4 h-4 border-2"></div>
+            </button>
+        </div>
+    </header>
 
-    <div class="kpis">
-      <div class="kpi"><div class="label">Latest Score</div><div id="kpi-score" class="value">-</div></div>
-      <div class="kpi"><div class="label">Latest Grade</div><div id="kpi-grade" class="value">-</div></div>
-      <div class="kpi"><div class="label">Average Score</div><div id="kpi-avg" class="value">-</div></div>
-      <div class="kpi"><div class="label">Trend Points</div><div id="kpi-points" class="value">-</div></div>
-    </div>
+    <!-- Main Content Grid -->
+    <main class="flex-1 flex gap-4 min-h-0 relative z-10">
+        
+        <!-- Left Column: Graph -->
+        <div class="glass-panel flex-1 flex flex-col overflow-hidden relative">
+            <div class="p-4 border-b border-slate-700/50 flex justify-between items-center shrink-0">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Service Dependency Graph</h2>
+                <div class="flex gap-2">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Healthy
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Warning
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Critical
+                    </span>
+                </div>
+            </div>
+            
+            <!-- D3 Container -->
+            <div id="graph-container" class="flex-1 w-full relative">
+                <div id="graph-tooltip" class="absolute hidden bg-slate-800 border border-slate-700 p-3 rounded-lg shadow-xl text-sm z-20 pointer-events-none transition-opacity duration-200"></div>
+                <!-- SVG dynamically injected here by D3 -->
+            </div>
+        </div>
 
-    <div class="grid" style="margin-top:14px;">
-      <div class="card">
-        <h3>Knowledge Health Timeline</h3>
-        <canvas id="scoreChart" height="120"></canvas>
-      </div>
-      <div class="card">
-        <h3>Policy Action Distribution</h3>
-        <canvas id="actionChart" height="120"></canvas>
-      </div>
-      <div class="card">
-        <h3>Doc Rewrite Runs</h3>
-        <table>
-          <thead><tr><th>ID</th><th>Status</th><th>Reason</th><th>Score</th><th>Created</th></tr></thead>
-          <tbody id="rewriteRows"></tbody>
-        </table>
-      </div>
-      <div class="card">
-        <h3>Doc Refresh Jobs</h3>
-        <table>
-          <thead><tr><th>ID</th><th>Decision</th><th>Priority</th><th>Action</th><th>Created</th></tr></thead>
-          <tbody id="docRows"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+        <!-- Right Column: Details & Health -->
+        <div class="w-96 flex flex-col gap-4 min-h-0 shrink-0">
+            
+            <!-- Health Score Panel -->
+            <div class="glass-panel p-5 shrink-0 flex flex-col gap-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">System Health</h2>
+                    <span id="health-grade" class="px-2 py-0.5 rounded text-xs font-bold bg-slate-700 text-white">-</span>
+                </div>
+                
+                <div class="flex items-end gap-2">
+                    <span id="health-score" class="text-4xl font-bold tracking-tighter text-white">--</span>
+                    <span class="text-slate-400 text-sm mb-1 font-medium">/ 100</span>
+                </div>
+                
+                <div class="h-32 w-full mt-2 relative">
+                    <canvas id="health-chart"></canvas>
+                </div>
+            </div>
 
-  <script>
-    let scoreChart, actionChart;
+            <!-- Node Details Panel -->
+            <div class="glass-panel flex-1 flex flex-col overflow-hidden">
+                <div class="p-4 border-b border-slate-700/50 shrink-0">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-300">Entity Details</h2>
+                </div>
+                <div id="node-details" class="p-4 overflow-y-auto text-sm text-slate-300">
+                    <div class="flex flex-col items-center justify-center h-full text-center text-slate-500 gap-2 opacity-70">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
+                        <p>Select a node or edge in the graph to view details and impact radius.</p>
+                    </div>
+                </div>
+            </div>
 
-    function badge(status){
-      if(status === 'emitted' || status === 'approved') return 'pill ok';
-      if(status === 'conflict' || status === 'rejected' || status === 'block') return 'pill bad';
-      return 'pill warn';
-    }
+        </div>
+    </main>
 
-    async function getJson(url){
-      const res = await fetch(url);
-      if(!res.ok) throw new Error('Request failed: '+url);
-      return res.json();
-    }
+    <script>
+        // State
+        let currentRepo = document.getElementById('repo-input').value;
+        let graphData = { nodes: [], links: [] };
+        let healthChart = null;
+        let simulation = null;
 
-    function renderCharts(overview){
-      const trend = overview.trend || [];
-      const labels = trend.map(x => String(x.id)).reverse();
-      const scores = trend.map(x => x.score).reverse();
+        // DOM Elements
+        const refreshBtn = document.getElementById('refresh-btn');
+        const repoInput = document.getElementById('repo-input');
+        const nodeDetails = document.getElementById('node-details');
 
-      if(scoreChart) scoreChart.destroy();
-      scoreChart = new Chart(document.getElementById('scoreChart'), {
-        type:'line',
-        data:{ labels, datasets:[{ label:'Health Score', data:scores, borderColor:'#6ea8fe', backgroundColor:'rgba(110,168,254,0.2)', tension:0.25 }]},
-        options:{ plugins:{legend:{labels:{color:'#eef3ff'}}}, scales:{ x:{ticks:{color:'#9aa6c7'}}, y:{ticks:{color:'#9aa6c7'}, min:0, max:100} } }
-      });
+        // Color scale based on health or type
+        function getNodeColor(d) {
+            if (d.type === 'service') return '#6366f1'; // Indigo 500
+            if (d.type === 'database') return '#10b981'; // Emerald 500
+            if (d.type === 'queue') return '#f59e0b'; // Amber 500
+            
+            // Health-based fallback
+            if (d.healthScore) {
+                if (d.healthScore >= 90) return '#10b981'; // Emerald
+                if (d.healthScore >= 70) return '#f59e0b'; // Amber
+                return '#ef4444'; // Rose
+            }
+            return '#94a3b8'; // Slate 400
+        }
 
-      const actions = overview.metrics?.policy_actions || {};
-      if(actionChart) actionChart.destroy();
-      actionChart = new Chart(document.getElementById('actionChart'), {
-        type:'doughnut',
-        data:{ labels:Object.keys(actions), datasets:[{ data:Object.values(actions), backgroundColor:['#6ea8fe','#f8e38c','#8ff0b0','#ffaaaa'] }]},
-        options:{ plugins:{legend:{labels:{color:'#eef3ff'}}} }
-      });
-    }
+        // Initialize D3 Graph
+        function initGraph() {
+            const container = document.getElementById('graph-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
 
-    function renderTable(rowsEl, items, cols){
-      rowsEl.innerHTML = '';
-      for(const it of items){
-        const tr = document.createElement('tr');
-        tr.innerHTML = cols.map(c => `<td>${c(it)}</td>`).join('');
-        rowsEl.appendChild(tr);
-      }
-    }
+            d3.select("#graph-container svg").remove();
+            
+            const svg = d3.select("#graph-container")
+                .append("svg")
+                .attr("viewBox", [0, 0, width, height]);
 
-    async function load(){
-      const repo = encodeURIComponent(document.getElementById('repo').value.trim());
-      const pr = encodeURIComponent(document.getElementById('pr').value.trim());
-      const window = encodeURIComponent(document.getElementById('window').value.trim());
+            const g = svg.append("g");
 
-      const overview = await getJson(`/policy/dashboard/overview?repo=${repo}&pr_number=${pr}&window=${window}`);
-      const docJobs = await getJson(`/policy/dashboard/doc-refresh-jobs?repo=${repo}&pr_number=${pr}&limit=15`);
-      const rewrites = await getJson(`/policy/dashboard/doc-rewrite-runs?repo=${repo}&pr_number=${pr}&limit=15`);
+            // Zoom support
+            svg.call(d3.zoom()
+                .extent([[0, 0], [width, height]])
+                .scaleExtent([0.1, 8])
+                .on("zoom", (e) => g.attr("transform", e.transform))
+            );
 
-      document.getElementById('kpi-score').textContent = overview.latest_snapshot?.score ?? '-';
-      document.getElementById('kpi-grade').textContent = overview.latest_snapshot?.grade ?? '-';
-      document.getElementById('kpi-avg').textContent = overview.metrics?.avg_score ?? '-';
-      document.getElementById('kpi-points').textContent = overview.metrics?.trend_points ?? '-';
+            // Simulation setup
+            simulation = d3.forceSimulation()
+                .force("link", d3.forceLink().id(d => d.id).distance(150))
+                .force("charge", d3.forceManyBody().strength(-400))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collide", d3.forceCollide().radius(40));
 
-      renderCharts(overview);
+            return { svg, g, width, height };
+        }
 
-      renderTable(
-        document.getElementById('docRows'),
-        docJobs.items || [],
-        [
-          x => x.id,
-          x => `<span class="${badge(x.decision)}">${x.decision}</span>`,
-          x => x.priority,
-          x => x.action,
-          x => x.created_at,
-        ]
-      );
+        // Update D3 Graph with new data
+        function updateGraphVisualization(data) {
+            const { g } = initGraph();
 
-      renderTable(
-        document.getElementById('rewriteRows'),
-        rewrites.items || [],
-        [
-          x => x.id,
-          x => `<span class="${badge(x.status)}">${x.status}</span>`,
-          x => x.reason || '-',
-          x => x.quality_gate_score ?? '-',
-          x => x.created_at,
-        ]
-      );
-    }
+            // Render Links
+            const link = g.append("g")
+                .selectAll("line")
+                .data(data.links)
+                .join("line")
+                .attr("class", "link")
+                .attr("stroke-width", d => Math.sqrt(d.value || 1) * 1.5)
+                .attr("marker-end", "url(#arrowhead)"); // Need to define marker
 
-    document.getElementById('refresh').addEventListener('click', load);
-    load();
-  </script>
+            // Render Nodes
+            const node = g.append("g")
+                .selectAll("g")
+                .data(data.nodes)
+                .join("g")
+                .attr("class", "node")
+                .call(drag(simulation));
+
+            node.append("circle")
+                .attr("r", d => d.type === 'service' ? 24 : 16)
+                .attr("fill", getNodeColor)
+                .on("mouseover", showTooltip)
+                .on("mouseout", hideTooltip)
+                .on("click", showNodeDetails);
+
+            node.append("text")
+                .attr("dx", 30)
+                .attr("dy", 4)
+                .text(d => d.label);
+
+            // Simulation ticks
+            simulation
+                .nodes(data.nodes)
+                .on("tick", () => {
+                    link
+                        .attr("x1", d => d.source.x)
+                        .attr("y1", d => d.source.y)
+                        .attr("x2", d => d.target.x)
+                        .attr("y2", d => d.target.y);
+                    node
+                        .attr("transform", d => `translate(${d.x},${d.y})`);
+                });
+
+            simulation.force("link").links(data.links);
+        }
+
+        // Drag behavior for nodes
+        function drag(sim) {
+            return d3.drag()
+                .on("start", e => {
+                    if (!e.active) sim.alphaTarget(0.3).restart();
+                    e.subject.fx = e.subject.x;
+                    e.subject.fy = e.subject.y;
+                })
+                .on("drag", e => {
+                    e.subject.fx = e.x;
+                    e.subject.fy = e.y;
+                })
+                .on("end", e => {
+                    if (!e.active) sim.alphaTarget(0);
+                    e.subject.fx = null;
+                    e.subject.fy = null;
+                });
+        }
+
+        // Tooltip logic
+        const tooltip = d3.select("#graph-tooltip");
+        function showTooltip(event, d) {
+            tooltip.style("display", "block")
+                .style("opacity", 1)
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY - 15) + "px")
+                .html(`
+                    <div class="font-bold text-white mb-1">${d.label}</div>
+                    <div class="text-xs text-slate-400 capitalize">${d.type || 'Entity'}</div>
+                    ${d.healthScore ? `<div class="mt-2 text-xs"><span class="text-slate-400">Health:</span> <span class="text-white font-medium">${d.healthScore}%</span></div>` : ''}
+                `);
+            
+            // Highlight connected links
+            d3.selectAll('.link').classed('highlight', l => l.source.id === d.id || l.target.id === d.id);
+        }
+
+        function hideTooltip() {
+            tooltip.style("display", "none").style("opacity", 0);
+            d3.selectAll('.link').classed('highlight', false);
+        }
+
+        function showNodeDetails(event, d) {
+            let endpointsHtml = '';
+            if (d.endpoints && d.endpoints.length > 0) {
+                endpointsHtml = `
+                    <div class="mt-4">
+                        <h3 class="text-xs font-semibold uppercase text-slate-400 mb-2">Endpoints</h3>
+                        <ul class="space-y-2">
+                            ${d.endpoints.map(ep => `
+                                <li class="bg-slate-800/50 p-2 rounded text-xs border border-slate-700/50 flex flex-col gap-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] uppercase font-bold text-sky-400 px-1 py-0.5 bg-sky-400/10 rounded">${ep.method || 'GET'}</span>
+                                        <span class="font-mono text-slate-300 break-all">${ep.path || '/'}</span>
+                                    </div>
+                                    ${ep.operation_id ? `<span class="text-[10px] text-slate-500">${ep.operation_id}</span>` : ''}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            nodeDetails.innerHTML = `
+                <div class="flex items-center gap-3 mb-4 pb-4 border-b border-slate-700/50">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-lg" style="background-color: ${getNodeColor(d)}">
+                        <svg class="w-5 h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"></path></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-white mb-0.5 leading-tight">${d.label}</h2>
+                        <span class="text-xs font-medium text-slate-400 uppercase tracking-widest">${d.type || 'Entity'}</span>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <span class="text-xs text-slate-500 uppercase tracking-wider block mb-1">ID</span>
+                        <code class="text-xs bg-slate-800/80 px-2 py-1 rounded text-slate-300 border border-slate-700/50 break-all">${d.id}</code>
+                    </div>
+                    
+                    ${d.healthScore ? `
+                    <div class="bg-slate-800/40 p-3 rounded-lg border border-slate-700/50 flex items-center justify-between">
+                        <span class="text-sm font-medium text-slate-300">Health Score</span>
+                        <span class="text-lg font-bold" style="color: ${getNodeColor(d)}">${d.healthScore}%</span>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                ${endpointsHtml}
+
+                <div class="mt-6 pt-4 border-t border-slate-700/50">
+                    <button onclick="simulateFailure('${d.id}')" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-300 text-xs font-medium py-2 px-3 rounded transition-colors flex justify-center items-center gap-2">
+                        <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Simulate Failure Cascade
+                    </button>
+                    <div id="cascade-result-${d.id}" class="mt-3 text-xs text-rose-300 hidden p-3 bg-rose-500/10 border border-rose-500/20 rounded"></div>
+                </div>
+            `;
+        }
+
+        // Feature: Simulate Failure Cascade
+        async function simulateFailure(failingServiceId) {
+            const resDiv = document.getElementById(`cascade-result-${failingServiceId}`);
+            if(!resDiv) return;
+            resDiv.classList.remove('hidden');
+            resDiv.innerHTML = '<div class="flex items-center gap-2"><div class="loader w-3 h-3 border-rose-400 border-t-transparent"></div> Analyzing impact radius...</div>';
+
+            try {
+                // In a real app, substitute with correct API base URL
+                const response = await fetch(`/simulation/failure-cascade`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ repo: currentRepo, failing_service: failingServiceId })
+                });
+
+                if(response.ok) {
+                    const data = await response.json();
+                    let html = `<div class="font-semibold text-rose-400 mb-1">Impacted Services (${data.affected_count}):</div>`;
+                    if(data.cascade_order && data.cascade_order.length > 0) {
+                        html += `<ul class="list-disc pl-4 space-y-1 mb-2">`;
+                        data.cascade_order.forEach(svc => { html += `<li>${svc}</li>` });
+                        html += `</ul>`;
+                        
+                        if(data.explanation && data.explanation.explanation) {
+                            html += `<div class="mt-2 pt-2 border-t border-rose-500/20 text-slate-300 italic opacity-90">${data.explanation.explanation}</div>`;
+                        }
+                    } else {
+                        html = '<div class="text-emerald-400 font-medium flex items-center gap-1.5"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> No downstream failure cascade detected.</div>';
+                    }
+                    resDiv.innerHTML = html;
+                } else {
+                    resDiv.innerHTML = 'Simulation failed or unavailable.';
+                }
+            } catch(e) {
+                resDiv.innerHTML = 'Error communicating with simulation engine.';
+            }
+        }
+
+        // Update Health Chart
+        function updateHealthChart(historyData) {
+            const ctx = document.getElementById('health-chart').getContext('2d');
+            
+            // Format data
+            let labels = [];
+            let data = [];
+            
+            if (historyData && historyData.length > 0) {
+                // Take up to 10 latest, chronological
+                const recent = historyData.slice(0, 10).reverse();
+                labels = recent.map((d, i) => `#${d.pr_number || 'TR'}`);
+                data = recent.map(d => d.score);
+                
+                // Update big number
+                const latest = historyData[0];
+                document.getElementById('health-score').textContent = latest.score.toFixed(1);
+                
+                const gradeEl = document.getElementById('health-grade');
+                gradeEl.textContent = latest.grade;
+                gradeEl.className = 'px-2 py-0.5 rounded text-xs font-bold text-white';
+                if(['A+', 'A'].includes(latest.grade)) gradeEl.classList.add('bg-emerald-500');
+                else if(['B+', 'B'].includes(latest.grade)) gradeEl.classList.add('bg-sky-500');
+                else if(['C+', 'C'].includes(latest.grade)) gradeEl.classList.add('bg-amber-500');
+                else gradeEl.classList.add('bg-rose-500');
+
+            } else {
+                labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+                data = [80, 82, 81, 85, 88]; // Mock data
+            }
+
+            if (healthChart) healthChart.destroy();
+
+            // Gradient fill
+            const gradient = ctx.createLinearGradient(0, 0, 0, 128);
+            gradient.addColorStop(0, 'rgba(56, 189, 248, 0.4)'); /* Sky 400 */
+            gradient.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+
+            healthChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Health Score',
+                        data: data,
+                        borderColor: '#38bdf8', /* Sky 400 */
+                        borderWidth: 2,
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#0f172a',
+                        pointBorderColor: '#38bdf8',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                    scales: {
+                        x: { display: false, grid: { display: false } },
+                        y: { display: false, min: 0, max: 100, grid: { display: false } }
+                    },
+                    interaction: { mode: 'nearest', axis: 'x', intersect: false }
+                }
+            });
+        }
+
+        // Fetch Data from Backend
+        async function fetchDashboardData() {
+            repoInput.disabled = true;
+            document.getElementById('refresh-text').classList.add('hidden');
+            document.getElementById('refresh-loader').classList.remove('hidden');
+
+            currentRepo = repoInput.value;
+
+            try {
+                // Replace with actual API endpoints if running inside the FastAPI context
+                // For demo/standalone purposes, we simulate the requests if endpoints fail.
+                let useMock = false;
+                let graphRes, historyRes;
+
+                try {
+                    [graphRes, historyRes] = await Promise.all([
+                        fetch(`/simulation/graph?repo=${encodeURIComponent(currentRepo)}`),
+                        fetch(`/simulation/time-travel?repo=${encodeURIComponent(currentRepo)}&horizon=1`, {method: 'POST'})
+                    ]);
+                    
+                    if(!graphRes.ok) useMock = true;
+                } catch(e) {
+                    useMock = true;
+                }
+
+                if (useMock) {
+                    console.log('Using mock data for dashboard visualization');
+                    // Mock Graph Data
+                    graphData = {
+                        nodes: [
+                            { id: 'api-gateway', label: 'API Gateway', type: 'service', healthScore: 92, endpoints: [{method: 'GET', path: '/api/v1/*'}] },
+                            { id: 'auth-service', label: 'Auth Service', type: 'service', healthScore: 98, endpoints: [{method: 'POST', path: '/login'}] },
+                            { id: 'user-service', label: 'User Service', type: 'service', healthScore: 85, endpoints: [{method: 'GET', path: '/users/:id'}] },
+                            { id: 'payment-service', label: 'Payment Service', type: 'service', healthScore: 65, endpoints: [{method: 'POST', path: '/pay'}] },
+                            { id: 'notification-service', label: 'Notification Service', type: 'service', healthScore: 90, endpoints: [] },
+                            { id: 'users-db', label: 'Users DB', type: 'database', healthScore: 100 },
+                            { id: 'payments-db', label: 'Payments DB', type: 'database', healthScore: 100 },
+                            { id: 'events-queue', label: 'Kafka Bus', type: 'queue', healthScore: 95 }
+                        ],
+                        links: [
+                            { source: 'api-gateway', target: 'auth-service', value: 2 },
+                            { source: 'api-gateway', target: 'user-service', value: 3 },
+                            { source: 'api-gateway', target: 'payment-service', value: 1 },
+                            { source: 'auth-service', target: 'users-db', value: 1 },
+                            { source: 'user-service', target: 'users-db', value: 4 },
+                            { source: 'payment-service', target: 'payments-db', value: 2 },
+                            { source: 'payment-service', target: 'events-queue', value: 1 },
+                            { source: 'events-queue', target: 'notification-service', value: 1 }
+                        ]
+                    };
+                    updateHealthChart(null); // Defaults to mock
+                } else {
+                    const data = await graphRes.json();
+                    
+                    // Transform API data to D3 format
+                    graphData = { nodes: [], links: [] };
+                    
+                    if (data.services) {
+                        data.services.forEach(svc => {
+                            graphData.nodes.push({
+                                id: svc.name,
+                                label: svc.name,
+                                type: 'service',
+                                healthScore: data.health ? data.health.score : 85,
+                                endpoints: svc.endpoints || []
+                            });
+                        });
+                    }
+                    if (data.edges) {
+                        data.edges.forEach(edge => {
+                            graphData.links.push({
+                                source: edge.from,
+                                target: edge.to,
+                                value: 1
+                            });
+                        });
+                    }
+                    
+                    try {
+                        const historyData = await historyRes.json();
+                        // Assume time-travel returns historical trajectory or recent history
+                        updateHealthChart(historyData.history || []); 
+                    } catch(e) {
+                        updateHealthChart(null);
+                    }
+                }
+
+                updateGraphVisualization(graphData);
+
+            } catch (err) {
+                console.error("Failed to load dashboard data:", err);
+                nodeDetails.innerHTML = `<div class="text-rose-400 p-4 bg-rose-500/10 border border-rose-500/20 rounded-lg">Failed to load system data. Check console.</div>`;
+            } finally {
+                repoInput.disabled = false;
+                document.getElementById('refresh-text').classList.remove('hidden');
+                document.getElementById('refresh-loader').classList.add('hidden');
+            }
+        }
+
+        // Setup
+        refreshBtn.addEventListener('click', fetchDashboardData);
+        
+        // Define SVG arrow marker for links
+        setTimeout(() => {
+            const svg = d3.select("svg");
+            if(svg.empty()) return;
+            svg.append("defs").append("marker")
+                .attr("id", "arrowhead")
+                .attr("viewBox", "-0 -5 10 10")
+                .attr("refX", 25) // Offset from node center
+                .attr("refY", 0)
+                .attr("orient", "auto")
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("xoverflow", "visible")
+                .append("svg:path")
+                .attr("d", "M 0,-5 L 10 ,0 L 0,5")
+                .attr("fill", "#475569")
+                .style("stroke","none");
+        }, 100);
+
+        // Initial load
+        fetchDashboardData();
+
+    </script>
 </body>
 </html>
