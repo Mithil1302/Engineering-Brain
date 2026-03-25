@@ -143,9 +143,6 @@ class PolicyPipeline:
     # DB connection
     # ------------------------------------------------------------------
 
-    def _emit_retry_idempotency_key(self, base_key: str, repo: str, pr_number: int, rule_set: str, emit_type: str) -> str:
-        return f"retry:{emit_type}:{repo}:{pr_number}:{rule_set}:{base_key}"
-
     def _db_conn(self):
         return psycopg2.connect(**self.pg_cfg)
 
@@ -166,6 +163,22 @@ class PolicyPipeline:
     def _inc_state(self, key: str, delta: int = 1) -> None:
         self.state[key] = self.state.get(key, 0) + delta
 
+    # ------------------------------------------------------------------
+    # Idempotency Key
+    # ------------------------------------------------------------------
+
+    def _emit_retry_idempotency_key(self, emit_type: str, base_idempotency_key: str, repo: str, pr_number: int, correlation_id: Optional[str] = None) -> str:
+        key_parts = [
+            "emit-retry",
+            emit_type,
+            repo,
+            str(pr_number),
+            base_idempotency_key
+        ]
+        if correlation_id:
+            key_parts.append(correlation_id)
+        return ":".join(key_parts)
+    
     # ------------------------------------------------------------------
     # Governance / runtime controls
     # ------------------------------------------------------------------

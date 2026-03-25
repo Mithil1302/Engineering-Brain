@@ -17,6 +17,8 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from ..llm import get_llm_client
+from .contract_generator import generate_grpc_contracts, generate_openapi_contracts
+from .scaffold_guardrails import evaluate_scaffold_guardrails
 
 log = logging.getLogger("ka-chow.scaffolder")
 
@@ -45,11 +47,30 @@ def generate_scaffold(
     """
     llm = get_llm_client()
     files: Dict[str, str] = {}
-    all_types = include_types or ["dockerfile", "docker-compose", "openapi", "k8s", "migration", "readme"]
+    all_types = include_types or [
+        "dockerfile",
+        "docker-compose",
+        "openapi",
+        "grpc",
+        "k8s",
+        "k8s-overlays",
+        "migration",
+        "readme",
+        "observability",
+        "guardrails",
+    ]
 
     services = plan.get("services", [])
     if not services:
         return files
+
+    # ------------------------------------------------------------------
+    # Stage 1: Contract-first generation
+    # ------------------------------------------------------------------
+    if "openapi" in all_types:
+        files.update(generate_openapi_contracts(plan))
+    if "grpc" in all_types:
+        files.update(generate_grpc_contracts(plan))
 
     for svc in services:
         svc_name = svc.get("name", "service").lower().replace(" ", "-")
@@ -64,7 +85,7 @@ def generate_scaffold(
         if "readme" in all_types:
             files[f"{svc_name}/README.md"] = _generate_readme(svc)
 
-        # OpenAPI spec via LLM
+        # OpenAPI spec via LLM fallback (service-local contract)
         if "openapi" in all_types and endpoints:
             try:
                 spec = _generate_openapi_spec(llm, svc_name, endpoints)
@@ -84,6 +105,19 @@ def generate_scaffold(
             files[f"k8s/{svc_name}-deployment.yaml"] = _generate_k8s_deployment(svc)
             files[f"k8s/{svc_name}-service.yaml"] = _generate_k8s_service(svc)
 
+    # Environment overlays (dev/staging/prod)
+    if "k8s-overlays" in all_types:
+        files.update(_generate_k8s_overlays(services))
+
+    # Observability baseline injection
+    if "observability" in all_types:
+        for svc in services:
+            svc_name = svc.get("name", "service").lower().replace(" ", "-")
+            files[f"{svc_name}/observability/logging.yaml"] = _generate_structured_logging_config(svc_name)
+            files[f"{svc_name}/observability/metrics.py"] = _generate_prometheus_stub()
+            files[f"{svc_name}/observability/tracing.md"] = _generate_trace_propagation_doc()
+            files[f"{svc_name}/src/health.py"] = _generate_health_endpoint_stub()
+
     # Migration SQL
     if "migration" in all_types:
         data_models = plan.get("data_models", [])
@@ -93,6 +127,13 @@ def generate_scaffold(
             except Exception as exc:
                 log.warning("Migration SQL generation failed: %s", exc)
                 files["migrations/001_scaffold.sql"] = _fallback_migration(data_models)
+
+    if "guardrails" in all_types:
+        warnings = evaluate_scaffold_guardrails(
+            plan=plan,
+            extracted_constraints=plan.get("extracted_constraints") or {},
+        )
+        files["architecture/guardrail_warnings.json"] = json.dumps(warnings, indent=2)
 
     return files
 
@@ -294,6 +335,115 @@ spec:
       targetPort: {port}
   type: ClusterIP
 """
+
+
+def _generate_k8s_overlays(services: List[Dict[str, Any]]) -> Dict[str, str]:
+    files: Dict[str, str] = {}
+    for svc in services:
+        name = svc.get("name", "service").lower().replace(" ", "-")
+        scale_hint = float((svc or {}).get("scale_hint_rpm") or 20000)
+        if scale_hint >= 500_000:
+            req_cpu, lim_cpu, req_mem, lim_mem = "500m", "2000m", "1Gi", "4Gi"
+        elif scale_hint >= 100_000:
+            req_cpu, lim_cpu, req_mem, lim_mem = "250m", "1000m", "512Mi", "2Gi"
+        else:
+            req_cpu, lim_cpu, req_mem, lim_mem = "100m", "500m", "256Mi", "512Mi"
+
+        base = {
+            "dev": (req_cpu, lim_cpu, req_mem, lim_mem, 1),
+            "staging": (req_cpu, lim_cpu, req_mem, lim_mem, 2),
+            "prod": (req_cpu, lim_cpu, req_mem, lim_mem, 3),
+        }
+        for env, (r_cpu, l_cpu, r_mem, l_mem, replicas) in base.items():
+            files[f"k8s/overlays/{env}/{name}-deployment-patch.yaml"] = "\n".join(
+                [
+                    "apiVersion: apps/v1",
+                    "kind: Deployment",
+                    f"metadata:\n  name: {name}",
+                    "spec:",
+                    f"  replicas: {replicas}",
+                    "  template:",
+                    "    spec:",
+                    "      containers:",
+                    "        - name: " + name,
+                    "          resources:",
+                    "            requests:",
+                    f"              cpu: {r_cpu}",
+                    f"              memory: {r_mem}",
+                    "            limits:",
+                    f"              cpu: {l_cpu}",
+                    f"              memory: {l_mem}",
+                ]
+            )
+    return files
+
+
+def _generate_structured_logging_config(service_name: str) -> str:
+    return "\n".join(
+        [
+            "version: 1",
+            "service: " + service_name,
+            "logging:",
+            "  format: json",
+            "  fields:",
+            "    - ts",
+            "    - level",
+            "    - service",
+            "    - trace_id",
+            "    - span_id",
+            "    - msg",
+        ]
+    )
+
+
+def _generate_prometheus_stub() -> str:
+    return "\n".join(
+        [
+            "# Prometheus metrics stub",
+            "from prometheus_client import Counter, Histogram",
+            "",
+            "REQUEST_COUNT = Counter('http_requests_total', 'Total HTTP requests', ['method', 'path', 'status'])",
+            "REQUEST_LATENCY = Histogram('http_request_latency_seconds', 'Request latency', ['method', 'path'])",
+            "",
+            "def observe_request(method: str, path: str, status: int, latency_seconds: float) -> None:",
+            "    REQUEST_COUNT.labels(method=method, path=path, status=str(status)).inc()",
+            "    REQUEST_LATENCY.labels(method=method, path=path).observe(latency_seconds)",
+        ]
+    )
+
+
+def _generate_trace_propagation_doc() -> str:
+    return "\n".join(
+        [
+            "# Distributed Tracing Propagation",
+            "",
+            "Every inbound and outbound request should propagate W3C trace context headers:",
+            "- traceparent",
+            "- tracestate",
+            "",
+            "For async messaging, carry trace context in message headers with keys:",
+            "- x-traceparent",
+            "- x-tracestate",
+        ]
+    )
+
+
+def _generate_health_endpoint_stub() -> str:
+    return "\n".join(
+        [
+            "from fastapi import APIRouter",
+            "",
+            "router = APIRouter()",
+            "",
+            "@router.get('/health')",
+            "def health():",
+            "    return {'status': 'ok'}",
+            "",
+            "@router.get('/ready')",
+            "def ready():",
+            "    return {'ready': True}",
+        ]
+    )
 
 
 # ---------------------------------------------------------------------------

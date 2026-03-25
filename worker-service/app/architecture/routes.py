@@ -1,9 +1,7 @@
 
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 from fastapi import APIRouter, Depends, Request, HTTPException, status
-from psycopg2.extras import RealDictCursor
-import json
 
 from ..dependencies import (
     pipeline, get_db_conn, PG_CFG, auth_arch_scoped,
@@ -12,12 +10,14 @@ from ..dependencies import (
 
 router = APIRouter()
 
-from ..architecture.models import ArchitecturePlanRequest
+from ..architecture.models import ArchitecturePlanRequest, RefinePlanRequest
 from ..architecture.planner import (
     generate_architecture_plan,
     generate_adr,
     _list_plans,
     _gather_system_context,
+    refine_architecture_plan,
+    diff_architecture_plans,
 )
 from ..architecture.scaffolder import generate_scaffold
 from ..architecture.explorer import build_architecture_explorer
@@ -44,6 +44,12 @@ class ADRRequest(BaseModel):
     context: str
 
 
+class ArchitectureDiffRequest(BaseModel):
+    repo: str
+    base_plan_id: int
+    new_plan_id: int
+
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -58,11 +64,11 @@ def architecture_plan(
     enforce_repo_scope(auth, request.repo)
 
     plan = generate_architecture_plan(
-        requirement=request.requirement,
+        requirement=request.requirement.requirement_text,
         repo=request.repo,
         pr_number=request.pr_number,
         pg_cfg=PG_CFG,
-        constraints=request.constraints if hasattr(request, "constraints") else None,
+        constraints=request.constraints,
     )
 
     audit_event(
@@ -134,6 +140,63 @@ def architecture_scaffold(
         "scaffold_files": files,
         "file_count": len(files),
     }
+
+
+@router.post("/architecture/refine")
+def architecture_refine(
+    request: RefinePlanRequest,
+    http_request: Request,
+    auth: AuthContext = Depends(auth_arch_scoped),
+):
+    enforce_repo_scope(auth, request.repo)
+    result = refine_architecture_plan(
+        repo=request.repo,
+        base_plan_id=request.base_plan_id,
+        requirement_delta=request.requirement_delta,
+        constraint_overrides=request.constraint_overrides,
+        pg_cfg=PG_CFG,
+    )
+    audit_event(
+        actor=auth.subject,
+        action="architecture_plan_refine",
+        result={"status": "success", "new_plan_id": result.get("new_plan_id")},
+        role=auth.role,
+        tenant_id=auth.tenant_id,
+        correlation_id=http_request.headers.get("x-correlation-id"),
+        request_id=http_request.headers.get("x-request-id"),
+        entities={"repo": request.repo, "base_plan_id": request.base_plan_id},
+    )
+    return result
+
+
+@router.get("/architecture/plan/{base_plan_id}/diff/{new_plan_id}")
+def architecture_plan_diff(
+    base_plan_id: int,
+    new_plan_id: int,
+    repo: str,
+    auth: AuthContext = Depends(auth_arch_scoped),
+):
+    enforce_repo_scope(auth, repo)
+    return diff_architecture_plans(
+        repo=repo,
+        base_plan_id=base_plan_id,
+        new_plan_id=new_plan_id,
+        pg_cfg=PG_CFG,
+    )
+
+
+@router.post("/architecture/diff")
+def architecture_diff(
+    request: ArchitectureDiffRequest,
+    auth: AuthContext = Depends(auth_arch_scoped),
+):
+    enforce_repo_scope(auth, request.repo)
+    return diff_architecture_plans(
+        repo=request.repo,
+        base_plan_id=request.base_plan_id,
+        new_plan_id=request.new_plan_id,
+        pg_cfg=PG_CFG,
+    )
 
 
 @router.post("/architecture/adr")
