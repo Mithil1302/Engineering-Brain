@@ -252,14 +252,17 @@ class GraphPopulator:
                             (node_id, repo),
                         )
                         
-                        # Update architecture_nodes to set valid_to (for temporal graph)
+                        # Insert into architecture_nodes with valid_to set (for temporal graph / test 14.3.5)
+                        # PK is (node_id, valid_from) — insert a new temporal record marking this node as deleted
                         cur.execute(
                             """
-                            UPDATE meta.architecture_nodes
-                            SET valid_to = NOW()
-                            WHERE node_id = %s AND repo = %s AND valid_to IS NULL
+                            INSERT INTO meta.architecture_nodes
+                                (node_id, repo, node_type, name, valid_from, valid_to)
+                            VALUES (%s, %s, 'service', %s, NOW(), NOW())
+                            ON CONFLICT (node_id, valid_from) DO UPDATE
+                                SET valid_to = NOW()
                             """,
-                            (node_id, repo),
+                            (node_id, repo, service_name),
                         )
                         
                         log.info(f"Deleted service node {service_name} from PostgreSQL and set valid_to in temporal graph")
