@@ -742,7 +742,7 @@ class PolicyPipeline:
             if changed_files is None:
                 # Full ingestion
                 self.log.info(f"Triggering full ingestion for {repo} (run_id={run_id})")
-                asyncio.run(pipeline.ingest_repo(
+                self.loop.run_until_complete(pipeline.ingest_repo(
                     repo=repo,
                     run_id=run_id,
                     triggered_by=triggered_by,
@@ -751,7 +751,7 @@ class PolicyPipeline:
             elif isinstance(changed_files, list) and len(changed_files) > 0:
                 # Incremental ingestion
                 self.log.info(f"Triggering incremental ingestion for {repo}: {len(changed_files)} files (run_id={run_id})")
-                asyncio.run(pipeline.ingest_on_push(
+                self.loop.run_until_complete(pipeline.ingest_on_push(
                     repo=repo,
                     run_id=run_id,
                     changed_files=changed_files,
@@ -961,6 +961,10 @@ class PolicyPipeline:
     # ------------------------------------------------------------------
 
     def _run_loop(self) -> None:
+        import asyncio
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        
         self.state["running"] = True
         try:
             ensure_schema(self._db_conn)
@@ -1016,8 +1020,7 @@ class PolicyPipeline:
                             if record.topic == "repo.ingestion":
                                 self._consume_ingestion_events(record.value)
                             elif record.topic == "repo.ingestion.complete":
-                                import asyncio
-                                asyncio.run(self._handle_ingestion_complete(record.value))
+                                self.loop.run_until_complete(self._handle_ingestion_complete(record.value))
                             else:
                                 self._handle_message(
                                     record.value,
@@ -1044,6 +1047,10 @@ class PolicyPipeline:
                     self.producer.close()
                 except Exception:
                     pass
+            try:
+                self.loop.close()
+            except Exception:
+                pass
 
     # ------------------------------------------------------------------
     # Lifecycle

@@ -299,7 +299,7 @@ class IngestionPipeline:
             # Step 5: Populate graph (only updates nodes for changed files)
             log.info(f"[{run_id}] Populating graph")
             await self.graph_populator.populate_graph(
-                repo, services, chunks, dependencies
+                repo, services, chunks, dependencies, is_incremental=True
             )
             log.info(f"[{run_id}] Graph populated")
             

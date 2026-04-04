@@ -45,11 +45,19 @@ class GraphPopulator:
         self._stub: "services_pb2_grpc.GraphServiceStub | None" = None
 
     def _get_stub(self) -> "services_pb2_grpc.GraphServiceStub":
-        """Lazily create the gRPC async channel + stub on first use (inside event loop)."""
-        if self._channel is None:
-            self._channel = grpc.aio.insecure_channel(self.graph_service_url)
-            self._stub = services_pb2_grpc.GraphServiceStub(self._channel)
-        return self._stub  # type: ignore[return-value]
+        """Recreate the gRPC async channel since asyncio.run() creates and destroys loops per ingestion run."""
+        if self._channel is not None:
+            # Try to close old channel cleanly
+            try:
+                import asyncio
+                if not asyncio.get_event_loop().is_closed():
+                    pass # We could try to close but it's simpler to just overwrite
+            except Exception:
+                pass
+                
+        self._channel = grpc.aio.insecure_channel(self.graph_service_url)
+        self._stub = services_pb2_grpc.GraphServiceStub(self._channel)
+        return self._stub
 
     async def _apply_mutations_batched(
         self,
@@ -105,6 +113,7 @@ class GraphPopulator:
         services: list[ServiceManifest],
         chunks: list[Chunk],
         dependencies: list[tuple[str, str, str]],
+        is_incremental: bool = False,
     ) -> None:
         """
         Populate graph with service architecture data in dependency order.
@@ -124,7 +133,7 @@ class GraphPopulator:
         log.info(f"Populating graph for {repo}: {len(services)} services, {len(dependencies)} dependencies")
         
         # Step 1: Create service nodes (fatal on failure)
-        await self._create_service_nodes(repo, services)
+        await self._create_service_nodes(repo, services, is_incremental)
         
         # Step 2: Create API nodes from OpenAPI chunks (non-fatal)
         spec_chunks = [c for c in chunks if c.source_type == "spec" and c.metadata.get("http_method")]
@@ -140,15 +149,16 @@ class GraphPopulator:
         
         log.info(f"Graph population complete for {repo}")
 
-    async def _create_service_nodes(self, repo: str, services: list[ServiceManifest]) -> None:
+    async def _create_service_nodes(self, repo: str, services: list[ServiceManifest], is_incremental: bool = False) -> None:
         """
         Create Neo4j service nodes and mirror to PostgreSQL.
         
         Node ID format: service:{repo}:{service_name}
         Raises on gRPC error (fatal - pipeline marks run as failed).
         """
-        # First, delete services that no longer exist
-        await self._delete_removed_services(repo, services)
+        # First, delete services that no longer exist (only during full ingestion)
+        if not is_incremental:
+            await self._delete_removed_services(repo, services)
         
         mutations = []
         for svc in services:
@@ -282,42 +292,7 @@ class GraphPopulator:
         except Exception as e:
             log.warning(f"Failed to delete removed services for {repo}: {e}")
 
-            node_id = f"service:{repo}:{svc.service_name}"
-            payload = {
-                "service_name": svc.service_name,
-                "language": svc.language,
-                "root_path": svc.root_path,
-                "has_dockerfile": svc.has_dockerfile,
-                "has_openapi": svc.has_openapi,
-                "has_proto": svc.has_proto,
-                "owner_hint": svc.owner_hint or "",  # gRPC proto fields cannot be None
-                "health_score": 50.0,
-                "last_ingested": datetime.now(timezone.utc).isoformat(),
-                "repo": repo,
-            }
-            
-            mutation = self._build_mutation_request(
-                mutation_type="create_node",
-                entity_kind="service",
-                entity_id=node_id,
-                payload=payload,
-            )
-            mutations.append(mutation)
-        
-        if mutations:
-            try:
-                await self._apply_mutations_batched(
-                    mutations,
-                    context_label=f"service nodes for {repo}",
-                    fatal_on_error=True,
-                )
-                log.info(f"Created {len(mutations)} service nodes for {repo}")
-                
-                # Mirror to PostgreSQL (non-fatal)
-                await self._mirror_to_postgres(repo, services, mutations)
-            except grpc.RpcError as e:
-                log.error(f"gRPC error creating service nodes for {repo}: {e.code()} {e.details()}")
-                raise  # Fatal - pipeline must fail
+
 
     async def _create_api_nodes(self, repo: str, spec_chunks: list[Chunk]) -> None:
         """

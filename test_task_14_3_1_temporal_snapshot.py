@@ -44,7 +44,8 @@ def test_temporal_snapshot_after_ingestion():
     conn = get_db_connection()
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            # Query for all ingestion snapshots
+            repo = os.getenv("TEST_REPO", "Mithil1302/Engineering-Brain")
+            # Query for all ingestion snapshots for this specific repo
             cur.execute("""
                 SELECT 
                     snapshot_id,
@@ -56,10 +57,10 @@ def test_temporal_snapshot_after_ingestion():
                     event_type,
                     event_payload
                 FROM meta.architecture_snapshots
-                WHERE event_type = 'ingestion'
+                WHERE event_type = 'ingestion' AND repo = %s
                 ORDER BY timestamp DESC
                 LIMIT 10
-            """)
+            """, (repo,))
             
             snapshots = cur.fetchall()
             
