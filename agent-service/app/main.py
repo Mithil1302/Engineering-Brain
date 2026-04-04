@@ -1,7 +1,8 @@
 import os
 from typing import Optional
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
+from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from .github_bridge import GithubBridge
 from .otel_setup import setup_otel
@@ -70,21 +71,59 @@ def list_tenant_installations(tenant_id: Optional[str] = None, _auth: None = Dep
     return {"items": bridge.list_tenant_installations(tenant_id=tenant_id)}
 
 
-@app.post("/github/webhook")
-async def github_webhook(
+async def _handle_github_webhook(
     request: Request,
+    background_tasks: BackgroundTasks,
     x_hub_signature_256: Optional[str] = Header(default=None, alias="X-Hub-Signature-256"),
     x_github_event: Optional[str] = Header(default=None, alias="X-GitHub-Event"),
     x_github_delivery: Optional[str] = Header(default=None, alias="X-GitHub-Delivery"),
 ):
     body = await request.body()
     if not bridge.verify_webhook_signature(body, x_hub_signature_256):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid webhook signature")
+        return JSONResponse({"error": "invalid signature"}, status_code=401)
 
     payload = await request.json()
-    result = bridge.process_github_webhook(
+    
+    # Process webhook in background to return HTTP 200 within 500ms
+    background_tasks.add_task(
+        bridge.process_github_webhook,
         event_type=(x_github_event or "").strip(),
         payload=payload,
         delivery_id=(x_github_delivery or "").strip() or None,
     )
-    return result
+    
+    return {"ok": True, "delivery_id": (x_github_delivery or "").strip() or None}
+
+
+@app.post("/github/webhook")
+async def github_webhook(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    x_hub_signature_256: Optional[str] = Header(default=None, alias="X-Hub-Signature-256"),
+    x_github_event: Optional[str] = Header(default=None, alias="X-GitHub-Event"),
+    x_github_delivery: Optional[str] = Header(default=None, alias="X-GitHub-Delivery"),
+):
+    return await _handle_github_webhook(
+        request=request,
+        background_tasks=background_tasks,
+        x_hub_signature_256=x_hub_signature_256,
+        x_github_event=x_github_event,
+        x_github_delivery=x_github_delivery,
+    )
+
+
+@app.post("/webhooks/github")
+async def github_webhook_alias(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    x_hub_signature_256: Optional[str] = Header(default=None, alias="X-Hub-Signature-256"),
+    x_github_event: Optional[str] = Header(default=None, alias="X-GitHub-Event"),
+    x_github_delivery: Optional[str] = Header(default=None, alias="X-GitHub-Delivery"),
+):
+    return await _handle_github_webhook(
+        request=request,
+        background_tasks=background_tasks,
+        x_hub_signature_256=x_hub_signature_256,
+        x_github_event=x_github_event,
+        x_github_delivery=x_github_delivery,
+    )

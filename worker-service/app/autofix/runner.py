@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS meta.autofix_runs (
     pr_number       BIGINT,
     fix_type        TEXT NOT NULL,        -- code_fix | doc_fix | contract_fix
     finding_id      TEXT,
+    graph_node_ids  JSONB NOT NULL DEFAULT '[]', -- Neo4j entity IDs this fix is traced to
     patches         JSONB NOT NULL DEFAULT '[]',
     confidence      FLOAT DEFAULT 0,
     reasoning       TEXT,
@@ -45,6 +46,8 @@ CREATE TABLE IF NOT EXISTS meta.autofix_runs (
     llm_tokens      INT DEFAULT 0,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE IF EXISTS meta.autofix_runs
+    ADD COLUMN IF NOT EXISTS graph_node_ids JSONB NOT NULL DEFAULT '[]';
 CREATE INDEX IF NOT EXISTS idx_autofix_repo ON meta.autofix_runs (repo);
 """
 
@@ -59,6 +62,19 @@ def _ensure_schema(pg_cfg: Dict[str, Any]) -> None:
         log.warning("Autofix schema setup failed: %s", exc)
 
 
+def _derive_graph_node_ids(finding: Dict[str, Any]) -> List[str]:
+    """
+    Derive Neo4j graph node IDs from a finding's entity_refs.
+
+    entity_refs follow the format used in graph_mapper.py:
+      - service:<repo>:<name>
+      - endpoint:<service_id>:<METHOD>:<path>
+    We pass them through as-is since they are the stable graph node IDs.
+    """
+    refs = finding.get("entity_refs") or []
+    return [str(r) for r in refs if r]
+
+
 def _persist_fix(
     pg_cfg: Dict[str, Any],
     *,
@@ -66,6 +82,7 @@ def _persist_fix(
     pr_number: Optional[int],
     fix_type: str,
     finding_id: Optional[str],
+    graph_node_ids: List[str],
     patches: List[Dict[str, Any]],
     confidence: float,
     reasoning: str,
@@ -81,13 +98,14 @@ def _persist_fix(
                 cur.execute(
                     """
                     INSERT INTO meta.autofix_runs
-                        (repo, pr_number, fix_type, finding_id, patches, confidence,
-                         reasoning, risk_level, status, llm_model, llm_tokens, created_at)
-                    VALUES (%s, %s, %s, %s, %s::jsonb, %s, %s, %s, 'generated', %s, %s, NOW())
+                        (repo, pr_number, fix_type, finding_id, graph_node_ids, patches,
+                         confidence, reasoning, risk_level, status, llm_model, llm_tokens, created_at)
+                    VALUES (%s, %s, %s, %s, %s::jsonb, %s::jsonb, %s, %s, %s, 'generated', %s, %s, NOW())
                     RETURNING id
                     """,
                     (
                         repo, pr_number, fix_type, finding_id,
+                        json.dumps(graph_node_ids),
                         json.dumps(patches), confidence, reasoning,
                         risk_level, llm_model, llm_tokens,
                     ),
@@ -177,12 +195,14 @@ def generate_code_fix(
     # Persist
     fix_id = -1
     if pg_cfg:
+        graph_node_ids = _derive_graph_node_ids(finding)
         fix_id = _persist_fix(
             pg_cfg,
             repo=repo,
             pr_number=pr_number,
             fix_type="code_fix",
             finding_id=finding.get("rule_id"),
+            graph_node_ids=graph_node_ids,
             patches=result.get("patches", []),
             confidence=float(result.get("confidence", 0)),
             reasoning=result.get("reasoning", ""),
@@ -194,6 +214,7 @@ def generate_code_fix(
     result["_meta"] = {
         "fix_id": fix_id,
         "fix_type": "code_fix",
+        "graph_node_ids": graph_node_ids if pg_cfg else _derive_graph_node_ids(finding),
         "llm_model": llm_model,
         "llm_tokens": llm_tokens,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -264,12 +285,14 @@ def generate_doc_fix(
     # Persist
     fix_id = -1
     if pg_cfg:
+        graph_node_ids = _derive_graph_node_ids(finding)
         fix_id = _persist_fix(
             pg_cfg,
             repo=repo,
             pr_number=pr_number,
             fix_type="doc_fix",
             finding_id=finding.get("rule_id"),
+            graph_node_ids=graph_node_ids,
             patches=patches,
             confidence=float(result.get("confidence", 0)),
             reasoning=result.get("explanation", ""),
@@ -281,6 +304,7 @@ def generate_doc_fix(
     result["_meta"] = {
         "fix_id": fix_id,
         "fix_type": "doc_fix",
+        "graph_node_ids": graph_node_ids if pg_cfg else _derive_graph_node_ids(finding),
         "patches": patches,
         "llm_model": llm_model,
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -341,12 +365,14 @@ def generate_contract_fix(
         })
 
     if pg_cfg:
+        graph_node_ids = _derive_graph_node_ids(finding)
         _persist_fix(
             pg_cfg,
             repo=repo,
             pr_number=pr_number,
             fix_type="contract_fix",
             finding_id=finding.get("rule_id"),
+            graph_node_ids=graph_node_ids,
             patches=patches,
             confidence=float(resp.get("confidence", 0)),
             reasoning=resp.get("reasoning", ""),
@@ -354,6 +380,7 @@ def generate_contract_fix(
             llm_model=llm_model,
             llm_tokens=llm_tokens,
         )
+        resp["_meta"] = {"graph_node_ids": graph_node_ids}
 
     resp["patches"] = patches
     return resp
@@ -374,8 +401,8 @@ def list_fixes(
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(
                     """
-                    SELECT id, repo, pr_number, fix_type, finding_id, patches,
-                           confidence, reasoning, risk_level, status, pr_url,
+                    SELECT id, repo, pr_number, fix_type, finding_id, graph_node_ids,
+                           patches, confidence, reasoning, risk_level, status, pr_url,
                            llm_model, llm_tokens, created_at
                     FROM meta.autofix_runs
                     WHERE (%s IS NULL OR repo = %s)

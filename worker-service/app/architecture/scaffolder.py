@@ -1,18 +1,35 @@
 """
-KA-CHOW Architecture Scaffolder — generates actual file contents from plans.
+KA-CHOW Autonomous Architecture Scaffolder — LLM-powered microservice generation.
 
-Given an architecture plan, produces:
-  - Dockerfiles
+Advanced features:
+  - Natural language requirements -> architecture spec
+  - Tech stack selection with rationale
+  - Complete microservice scaffolding (REST/gRPC)
+  - Database schema generation with pgvector
+  - Infrastructure-as-Code (Docker, K8s, Terraform)
+  - CI/CD pipeline generation (GitHub Actions)
+  - Observability scaffolding (metrics, traces, dashboards)
+  - Security baseline (auth, authz, secrets)
+  - Guardrails evaluation for scaffold quality
+
+Given an architecture plan or natural language requirements, produces:
+  - Dockerfiles (multi-stage, production-ready)
   - docker-compose fragments
-  - OpenAPI spec stubs
-  - Kubernetes manifests
+  - OpenAPI 3.0 specs
+  - gRPC proto files
+  - Kubernetes manifests (Deployment, Service, HPA, NetworkPolicy)
+  - Kustomize overlays (dev/staging/prod)
   - Database migration SQL
+  - Terraform IaC for GCP/AWS
+  - GitHub Actions CI/CD workflows
   - README.md for each service
+  - Observability configs (logging, metrics, tracing)
 """
 from __future__ import annotations
 
 import json
 import logging
+import hashlib
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -531,3 +548,439 @@ def _fallback_migration(data_models: List[Dict[str, Any]]) -> str:
         lines.append(");")
         lines.append("")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Autonomous Scaffolding from Natural Language Requirements
+# ---------------------------------------------------------------------------
+
+def scaffold_from_requirements(
+    requirements: str,
+    repo: str,
+    target_platform: str = "kubernetes",
+    constraints: Optional[List[str]] = None,
+    preferred_stack: Optional[Dict[str, str]] = None,
+    pg_cfg: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """
+    Generate complete scaffolding from natural language requirements.
+
+    This is the autonomous agent entry point that:
+    1. Uses LLM to interpret requirements into architecture spec
+    2. Selects appropriate tech stack with rationale
+    3. Generates complete service scaffolding
+    4. Creates infrastructure-as-code
+    5. Produces CI/CD pipelines
+
+    Args:
+        requirements: Natural language description of what to build
+        repo: Repository context
+        target_platform: Target deployment platform (kubernetes|docker-compose|serverless)
+        constraints: List of constraints (tech stack, budget, timeline)
+        preferred_stack: Preferred technology choices
+        pg_cfg: PostgreSQL configuration for persistence
+
+    Returns:
+        Complete scaffolding result with all generated files
+    """
+    from ..llm.prompts import ScaffoldingArchitectPrompt
+
+    llm = get_llm_client()
+
+    # Build system context from existing architecture
+    system_context = _gather_system_context(repo, pg_cfg)
+
+    # Generate architecture blueprint using LLM
+    prompt = ScaffoldingArchitectPrompt.user_prompt(
+        requirements=requirements,
+        existing_context=system_context,
+        target_platform=target_platform,
+    )
+
+    try:
+        result = llm.generate(
+            prompt,
+            system_prompt=ScaffoldingArchitectPrompt.system_prompt,
+            json_mode=True,
+            json_schema=ScaffoldingArchitectPrompt.response_schema(),
+            temperature=0.4,
+        )
+
+        blueprint = result.as_json()
+        if not isinstance(blueprint, dict):
+            blueprint = _fallback_blueprint(requirements)
+
+        # Convert blueprint to plan format for generate_scaffold
+        plan = _convert_blueprint_to_plan(blueprint)
+        plan["extracted_constraints"] = {"constraints": constraints or []}
+
+        # Generate all scaffold files
+        files = generate_scaffold(
+            plan,
+            repo=repo,
+            include_types=[
+                "dockerfile",
+                "docker-compose",
+                "openapi",
+                "grpc",
+                "k8s",
+                "k8s-overlays",
+                "migration",
+                "readme",
+                "observability",
+                "guardrails",
+            ],
+        )
+
+        # Add Terraform infrastructure
+        if target_platform == "kubernetes":
+            terraform_files = _generate_terraform_infrastructure(blueprint)
+            files.update(terraform_files)
+
+        # Add CI/CD workflow
+        ci_files = _generate_github_actions_workflow(plan)
+        files.update(ci_files)
+
+        scaffold_id = _generate_scaffold_id(requirements, repo)
+
+        # Persist result
+        _persist_scaffold_result(
+            scaffold_id=scaffold_id,
+            repo=repo,
+            requirements=requirements,
+            blueprint=blueprint,
+            files=files,
+            llm_model=result.model,
+            tokens_used=result.input_tokens + result.output_tokens,
+            pg_cfg=pg_cfg,
+        )
+
+        return {
+            "scaffold_id": scaffold_id,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "request": {
+                "requirements": requirements,
+                "repo": repo,
+                "target_platform": target_platform,
+                "constraints": constraints,
+            },
+            "blueprint": blueprint,
+            "files": files,
+            "file_count": len(files),
+            "llm_model": result.model,
+            "tokens_used": result.input_tokens + result.output_tokens,
+        }
+
+    except Exception as exc:
+        log.error("Autonomous scaffolding failed: %s", exc)
+        return {
+            "error": str(exc),
+            "fallback": True,
+            "blueprint": _fallback_blueprint(requirements),
+        }
+
+
+def _generate_scaffold_id(requirements: str, repo: str) -> str:
+    """Generate a unique scaffold ID."""
+    content = f"{requirements}{repo}{datetime.now(timezone.utc).isoformat()}"
+    return f"scaffold_{hashlib.sha256(content.encode()).hexdigest()[:12]}"
+
+
+def _gather_system_context(repo: str, pg_cfg: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Gather existing system context for scaffolding decisions."""
+    context = {
+        "services": [],
+        "infrastructure": [],
+        "constraints": [],
+    }
+
+    if not pg_cfg:
+        return context
+
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+
+    try:
+        with psycopg2.connect(**pg_cfg) as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(
+                    """
+                    SELECT services, infrastructure, decisions
+                    FROM meta.architecture_plan_runs
+                    WHERE repo = %s
+                    ORDER BY id DESC LIMIT 5
+                    """,
+                    (repo,),
+                )
+                rows = cur.fetchall()
+                for row in rows:
+                    services = row.get("services") or []
+                    if isinstance(services, str):
+                        services = json.loads(services)
+                    context["services"].extend(services)
+
+                    infra = row.get("infrastructure") or []
+                    if isinstance(infra, str):
+                        infra = json.loads(infra)
+                    context["infrastructure"].extend(infra)
+    except Exception as exc:
+        log.warning("System context gathering failed: %s", exc)
+
+    return context
+
+
+def _convert_blueprint_to_plan(blueprint: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert LLM blueprint to plan format for generate_scaffold."""
+    services = blueprint.get("services", [])
+    data_models = blueprint.get("data_models", [])
+
+    return {
+        "title": blueprint.get("title", "Generated Architecture"),
+        "summary": blueprint.get("summary", ""),
+        "services": services,
+        "data_models": data_models,
+        "infrastructure": blueprint.get("infrastructure", {}),
+        "adrs": blueprint.get("adrs", []),
+        "risks": blueprint.get("risks", []),
+    }
+
+
+def _fallback_blueprint(requirements: str) -> Dict[str, Any]:
+    """Template-based fallback when LLM is unavailable."""
+    return {
+        "title": "Generated Microservice Architecture",
+        "summary": f"Scaffolded from requirements: {requirements[:200]}...",
+        "services": [
+            {
+                "name": "api-service",
+                "responsibility": "Main API gateway",
+                "technology": "python-fastapi",
+                "endpoints": [
+                    {"method": "GET", "path": "/health", "description": "Health check"},
+                ],
+            },
+        ],
+        "data_models": [],
+        "infrastructure": {},
+        "adrs": [],
+    }
+
+
+def _generate_terraform_infrastructure(blueprint: Dict[str, Any]) -> Dict[str, str]:
+    """Generate Terraform configuration for cloud infrastructure."""
+    files = {}
+
+    main_tf = '''# Auto-generated by KA-CHOW Scaffolding Agent
+terraform {
+  required_version = ">= 1.0.0"
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 5.0"
+    }
+  }
+}
+
+variable "project_id" {
+  description = "GCP Project ID"
+  type        = string
+}
+
+variable "region" {
+  description = "GCP Region"
+  type        = string
+  default     = "us-central1"
+}
+
+variable "environment" {
+  description = "Environment"
+  type        = string
+  default     = "production"
+}
+
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
+# GKE Cluster
+module "gke" {
+  source  = "terraform-google-modules/kubernetes-engine/google"
+  version = "~> 28.0"
+
+  project_id   = var.project_id
+  name         = "ka-chow-${var.environment}"
+  region       = var.region
+  zones        = ["us-central1-a", "us-central1-b", "us-central1-c"]
+}
+
+# Cloud SQL
+resource "google_sql_database_instance" "postgres" {
+  name             = "ka-chow-db-${var.environment}"
+  database_version = "POSTGRES_15"
+  region           = var.region
+
+  settings {
+    tier          = "db-custom-2-4096"
+    disk_size     = 100
+    disk_type     = "PD_SSD"
+  }
+}
+
+output "gke_endpoint" {
+  value = module.gke.endpoint
+}
+'''
+    files["terraform/main.tf"] = main_tf
+
+    variables_tf = '''# Auto-generated by KA-CHOW Scaffolding Agent
+variable "docker_registry" {
+  type    = string
+  default = "gcr.io"
+}
+
+variable "kafka_bootstrap_servers" {
+  type    = list(string)
+  default = []
+}
+'''
+    files["terraform/variables.tf"] = variables_tf
+
+    return files
+
+
+def _generate_github_actions_workflow(plan: Dict[str, Any]) -> Dict[str, str]:
+    """Generate GitHub Actions CI/CD workflow."""
+    services = plan.get("services", [])
+    service_names = [s.get("name", "service").lower().replace(" ", "-") for s in services]
+
+    if not service_names:
+        service_names = ["api-service"]
+
+    content = f'''# Auto-generated by KA-CHOW Scaffolding Agent
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [{', '.join(service_names)}]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install ruff mypy
+      - name: Run linter
+        run: ruff check . && mypy . --ignore-missing-imports
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        service: [{', '.join(service_names)}]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install pytest pytest-cov
+      - name: Run tests
+        run: pytest --cov=. --cov-report=xml
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        service: [{', '.join(service_names)}]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{{{ github.actor }}}}
+          password: ${{{{ secrets.GITHUB_TOKEN }}}}
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ghcr.io/${{{{ github.repository }}}}/${{{{ matrix.service }}}}:${{{{ github.sha }}}}
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/
+          kubectl set image deployment/{', '.join(service_names)} {', '.join([f"{s}=ghcr.io/${{{{ github.repository }}}}/{s}:${{{{ github.sha }}}}" for s in service_names])}
+'''
+    return {".github/workflows/ci-cd.yaml": content}
+
+
+def _persist_scaffold_result(
+    scaffold_id: str,
+    repo: str,
+    requirements: str,
+    blueprint: Dict[str, Any],
+    files: Dict[str, str],
+    llm_model: str,
+    tokens_used: int,
+    pg_cfg: Optional[Dict[str, Any]],
+) -> None:
+    """Persist scaffolding result to PostgreSQL."""
+    if not pg_cfg:
+        return
+
+    import psycopg2
+    from psycopg2.extras import Json
+
+    try:
+        with psycopg2.connect(**pg_cfg) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO meta.scaffolding_runs
+                    (scaffold_id, repo, requirements, blueprint, files, llm_model, tokens_used, created_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+                    """,
+                    (
+                        scaffold_id,
+                        repo,
+                        requirements,
+                        Json(blueprint),
+                        Json({k: v for k, v in files.items() if len(v) < 10000}),
+                        llm_model,
+                        tokens_used,
+                    ),
+                )
+            conn.commit()
+        log.info("Scaffold result persisted: %s", scaffold_id)
+    except Exception as exc:
+        log.warning("Scaffold persistence failed: %s", exc)

@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* Minimalist container styling replacing glassmorphism */
+.glass {
+  background-color: #0c0c0e;
+  border: 1px solid #27272a;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Skeleton shimmer */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  animation: skeleton-shimmer 2s infinite linear;
+  background: linear-gradient(
+    90deg,
+    #18181b 0%,
+    #27272a 50%,
+    #18181b 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 6px;
+}
+
+/* Blinking cursor for streaming */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.cursor-blink::after {
+  content: '▋';
+  animation: blink 1s step-end infinite;
+  color: #38bdf8;
+  margin-left: 2px;
+}
+
+/* Inline blinking cursor animation */
+.animate-blink {
+  animation: blink 1s ease-in-out infinite;
+}
+
+/* Accordion animations */
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+.animate-accordion-down {
+  animation: accordion-down 0.2s ease-out;
+}
+.animate-accordion-up {
+  animation: accordion-up 0.2s ease-out;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* React Flow overrides */
+.react-flow__background { background: #0f172a; }
+.react-flow__minimap { background: #1e293b; border: 1px solid #334155; border-radius: 8px; }
+.react-flow__controls { background: #1e293b; border: 1px solid #334155; border-radius: 8px; }
+.react-flow__controls button { background: #1e293b; border-color: #334155; color: #94a3b8; }
+.react-flow__controls button:hover { background: #334155; color: #f8fafc; }
+
+/* Policy page layout - stacks vertically below 1400px, two-column above */
+.policy-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1400px) {
+  .policy-grid {
+    grid-template-columns: 380px 1fr;
+  }
+}
+
+.policy-list-panel {
+  width: 100%;
+}
+
+@media (min-width: 1400px) {
+  .policy-list-panel {
+    width: 380px;
+  }
+}

@@ -1,4 +1,8 @@
 {
   "python.terminal.useEnvFile": true,
-  "python.envFile": "${workspaceFolder}/.env"
+  "python.envFile": "${workspaceFolder}/.env",
+  "kiroAgent.configureMCP": "Disabled",
+  "python-envs.defaultEnvManager": "ms-python.python:system",
+  "python-envs.defaultPackageManager": "ms-python.python:pip",
+  "typescript.autoClosingTags": false
 }

@@ -1,0 +1,257 @@
+[
+    {
+        "TopFolder":  "proto",
+        "FileCount":  1634,
+        "TotalLines":  258933
+    },
+    {
+        "TopFolder":  "worker-service",
+        "FileCount":  92,
+        "TotalLines":  19291
+    },
+    {
+        "TopFolder":  "docs",
+        "FileCount":  27,
+        "TotalLines":  927
+    },
+    {
+        "TopFolder":  "api-gateway",
+        "FileCount":  8,
+        "TotalLines":  2027
+    },
+    {
+        "TopFolder":  "graph-service",
+        "FileCount":  8,
+        "TotalLines":  497
+    },
+    {
+        "TopFolder":  "agent-service",
+        "FileCount":  5,
+        "TotalLines":  1349
+    },
+    {
+        "TopFolder":  "ingestion-service",
+        "FileCount":  4,
+        "TotalLines":  632
+    },
+    {
+        "TopFolder":  "infra",
+        "FileCount":  3,
+        "TotalLines":  655
+    },
+    {
+        "TopFolder":  "test_gemini_models.py",
+        "FileCount":  1,
+        "TotalLines":  37
+    },
+    {
+        "TopFolder":  "TASK3_TESTING_README.md",
+        "FileCount":  1,
+        "TotalLines":  91
+    },
+    {
+        "TopFolder":  "test_github_auth.py",
+        "FileCount":  1,
+        "TotalLines":  33
+    },
+    {
+        "TopFolder":  "test_ingestion_status.py",
+        "FileCount":  1,
+        "TotalLines":  96
+    },
+    {
+        "TopFolder":  "test_ingestion_1min.py",
+        "FileCount":  1,
+        "TotalLines":  99
+    },
+    {
+        "TopFolder":  "TASK2_TEST_RESULTS.md",
+        "FileCount":  1,
+        "TotalLines":  151
+    },
+    {
+        "TopFolder":  "TASK2_QUICK_TEST.md",
+        "FileCount":  1,
+        "TotalLines":  66
+    },
+    {
+        "TopFolder":  "TASK2_TEST_SUMMARY.md",
+        "FileCount":  1,
+        "TotalLines":  185
+    },
+    {
+        "TopFolder":  "TASK3_TEST_SUMMARY.md",
+        "FileCount":  1,
+        "TotalLines":  133
+    },
+    {
+        "TopFolder":  "TASK2_TESTING_README.md",
+        "FileCount":  1,
+        "TotalLines":  245
+    },
+    {
+        "TopFolder":  ".gitignore",
+        "FileCount":  1,
+        "TotalLines":  22
+    },
+    {
+        "TopFolder":  "tmp_logs.txt",
+        "FileCount":  1,
+        "TotalLines":  0
+    },
+    {
+        "TopFolder":  "test_task1.bat",
+        "FileCount":  1,
+        "TotalLines":  25
+    },
+    {
+        "TopFolder":  "test_task1.sh",
+        "FileCount":  1,
+        "TotalLines":  25
+    },
+    {
+        "TopFolder":  "TESTING_COMPLETE.md",
+        "FileCount":  1,
+        "TotalLines":  217
+    },
+    {
+        "TopFolder":  "test_task2.bat",
+        "FileCount":  1,
+        "TotalLines":  78
+    },
+    {
+        "TopFolder":  "test_ingestion_with_real_repo.py",
+        "FileCount":  1,
+        "TotalLines":  190
+    },
+    {
+        "TopFolder":  "test_ingestion_trigger.py",
+        "FileCount":  1,
+        "TotalLines":  71
+    },
+    {
+        "TopFolder":  "tmp_logs4.txt",
+        "FileCount":  1,
+        "TotalLines":  369
+    },
+    {
+        "TopFolder":  "tmp_logs2.txt",
+        "FileCount":  1,
+        "TotalLines":  58
+    },
+    {
+        "TopFolder":  "tmp_logs3.txt",
+        "FileCount":  1,
+        "TotalLines":  79
+    },
+    {
+        "TopFolder":  "TASK2_FINAL_RESULTS.md",
+        "FileCount":  1,
+        "TotalLines":  50
+    },
+    {
+        "TopFolder":  "CRITICAL_FIXES_NEEDED.md",
+        "FileCount":  1,
+        "TotalLines":  175
+    },
+    {
+        "TopFolder":  "CONFIGURATION_AUDIT_COMPLETE.md",
+        "FileCount":  1,
+        "TotalLines":  180
+    },
+    {
+        "TopFolder":  "docker-compose.yml",
+        "FileCount":  1,
+        "TotalLines":  280
+    },
+    {
+        "TopFolder":  "openapi.json",
+        "FileCount":  1,
+        "TotalLines":  10315
+    },
+    {
+        "TopFolder":  "fix_embeddings_table.bat",
+        "FileCount":  1,
+        "TotalLines":  22
+    },
+    {
+        "TopFolder":  "_full_file_inventory.txt",
+        "FileCount":  1,
+        "TotalLines":  57454
+    },
+    {
+        "TopFolder":  ".vscode",
+        "FileCount":  1,
+        "TotalLines":  8
+    },
+    {
+        "TopFolder":  "_full_tracked_file_read_report.json",
+        "FileCount":  1,
+        "TotalLines":  58064
+    },
+    {
+        "TopFolder":  "check_services.bat",
+        "FileCount":  1,
+        "TotalLines":  56
+    },
+    {
+        "TopFolder":  "_tracked_files_inventory.txt",
+        "FileCount":  1,
+        "TotalLines":  1766
+    },
+    {
+        "TopFolder":  "openapi_docs.html",
+        "FileCount":  1,
+        "TotalLines":  30
+    },
+    {
+        "TopFolder":  "TASK_14_1_SOLUTION.md",
+        "FileCount":  1,
+        "TotalLines":  164
+    },
+    {
+        "TopFolder":  "TASK_14_1_2_FIX.md",
+        "FileCount":  1,
+        "TotalLines":  34
+    },
+    {
+        "TopFolder":  "TASK1_TEST_SUMMARY.md",
+        "FileCount":  1,
+        "TotalLines":  230
+    },
+    {
+        "TopFolder":  "TASK2_COMPLETE.md",
+        "FileCount":  1,
+        "TotalLines":  124
+    },
+    {
+        "TopFolder":  "TASK1_TESTING_README.md",
+        "FileCount":  1,
+        "TotalLines":  289
+    },
+    {
+        "TopFolder":  "REQUIRED_CONFIGURATION.md",
+        "FileCount":  1,
+        "TotalLines":  178
+    },
+    {
+        "TopFolder":  "QUICK_FIX_REFERENCE.md",
+        "FileCount":  1,
+        "TotalLines":  143
+    },
+    {
+        "TopFolder":  "TASK_14_1_1_FINDINGS.md",
+        "FileCount":  1,
+        "TotalLines":  45
+    },
+    {
+        "TopFolder":  "TASK_14_1_2_FINDINGS.md",
+        "FileCount":  1,
+        "TotalLines":  130
+    },
+    {
+        "TopFolder":  "TASK_14_1_1_STATUS.md",
+        "FileCount":  1,
+        "TotalLines":  58
+    }
+]

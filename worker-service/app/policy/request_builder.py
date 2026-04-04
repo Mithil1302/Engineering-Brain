@@ -26,18 +26,33 @@ def build_request(
     Returns None if the payload does not contain enough information to
     construct a valid request (e.g. missing repo identifier).
     """
-    repo = payload.get("repo") or {}
-    repo_id = repo.get("full_name") or repo.get("name_with_owner") or repo.get("id")
+    raw_repo = payload.get("repo")
+    repo_id: Optional[str] = None
+    if isinstance(raw_repo, dict):
+        repo_id = (
+            raw_repo.get("full_name")
+            or raw_repo.get("name_with_owner")
+            or raw_repo.get("id")
+        )
+    elif isinstance(raw_repo, str):
+        repo_id = raw_repo
+
     if not repo_id:
         return None
 
-    changed_files = [
-        ChangedFile(
-            path=f.get("path", "unknown"),
-            status=f.get("status", "modified"),
-        )
-        for f in payload.get("changed_files", [])
-    ]
+    changed_files: list[ChangedFile] = []
+    for f in payload.get("changed_files", []):
+        if isinstance(f, dict):
+            path = f.get("path") or f.get("filename") or "unknown"
+            status = f.get("status", "modified")
+            patch = f.get("patch")
+        elif isinstance(f, str):
+            path = f
+            status = "modified"
+            patch = None
+        else:
+            continue
+        changed_files.append(ChangedFile(path=path, status=status, patch=patch))
 
     policy_ctx = payload.get("policy_context") or {}
 
@@ -71,8 +86,11 @@ def build_request(
         except Exception:
             continue
 
-    pr = payload.get("pull_request") or {}
-    pr_number = pr.get("number")
+    pr_number = payload.get("pr_number")
+    if pr_number is None:
+        pr = payload.get("pull_request") or {}
+        if isinstance(pr, dict):
+            pr_number = pr.get("number")
 
     return PolicyEvaluationRequest(
         repo=repo_id,

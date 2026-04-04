@@ -7,6 +7,8 @@ statement uses IF NOT EXISTS / ADD COLUMN IF NOT EXISTS.
 """
 from __future__ import annotations
 
+import os
+from pathlib import Path
 from typing import Callable
 
 
@@ -214,3 +216,47 @@ def ensure_schema(db_conn_func: Callable) -> None:
                 """
             )
         conn.commit()
+
+        # Task 12.3: Wire migration 003 to startup
+        # Migration 003 adds ingestion_runs, qa_event_log, slack_sessions, 
+        # check_run_tracking, graph_nodes, and temporal graph enhancements
+        _run_migration_003_if_needed(conn)
+
+
+def _run_migration_003_if_needed(conn) -> None:
+    """
+    Run migration 003 if meta.ingestion_runs does not exist.
+    Task 12.3.2: Use migration version tracking approach - check if meta.ingestion_runs 
+    exists before running migration 003.
+    Task 12.3.3: Migration is idempotent - all statements use IF NOT EXISTS.
+    """
+    with conn.cursor() as cur:
+        # Check if meta.ingestion_runs exists (indicator that migration 003 has run)
+        cur.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'meta' 
+                AND table_name = 'ingestion_runs'
+            );
+        """)
+        table_exists = cur.fetchone()[0]
+        
+        if table_exists:
+            # Migration 003 already applied, skip
+            return
+        
+        # Read and execute migration 003
+        migration_path = Path(__file__).parent.parent.parent / "migrations" / "003_ingestion_and_gaps.sql"
+        
+        if not migration_path.exists():
+            # Migration file not found, log warning but don't fail startup
+            import logging
+            logging.getLogger(__name__).warning(
+                f"Migration 003 file not found at {migration_path}, skipping"
+            )
+            return
+        
+        migration_sql = migration_path.read_text(encoding="utf-8")
+        cur.execute(migration_sql)
+    
+    conn.commit()

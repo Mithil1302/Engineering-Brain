@@ -46,8 +46,9 @@ class PolicyPipeline:
     # Initialisation
     # ------------------------------------------------------------------
 
-    def __init__(self, logger):
+    def __init__(self, logger, impact_analyzer=None):
         self.log = logger
+        self.impact_analyzer = impact_analyzer
         self.enabled = os.getenv("POLICY_PIPELINE_ENABLED", "true").lower() == "true"
 
         # Kafka config
@@ -85,6 +86,10 @@ class PolicyPipeline:
             "password": os.getenv("POSTGRES_PASSWORD", "brain"),
             "dbname":   os.getenv("POSTGRES_DB",       "brain"),
         }
+
+        # Initialize time travel system
+        from ..simulation.time_travel import TemporalGraphStore
+        self.time_travel = TemporalGraphStore(pg_cfg=self.pg_cfg)
 
         # Threading / Kafka handles (set during _run_loop)
         self.stop_event = threading.Event()
@@ -388,6 +393,20 @@ class PolicyPipeline:
         event_idempotency = payload.get("idempotency_key") or dedup_key
         fingerprint = self._fingerprint(response_payload)
 
+        repo_payload = payload.get("repo")
+        if isinstance(repo_payload, dict):
+            repo_full_name = str(repo_payload.get("full_name") or request.repo)
+        elif isinstance(repo_payload, str):
+            repo_full_name = repo_payload
+        else:
+            repo_full_name = request.repo
+
+        event_head_sha = (
+            payload.get("head_sha")
+            or (payload.get("pull_request") or {}).get("head_sha")
+            or (((payload.get("pull_request") or {}).get("head") or {}).get("sha"))
+        )
+
         # Persist check run
         with self._db_conn() as conn:
             conn.autocommit = False
@@ -418,11 +437,33 @@ class PolicyPipeline:
             )
             conn.commit()
 
+        # Record policy findings as temporal events (Task 3.4.3)
+        self._record_policy_temporal(request.repo, check_run_id, findings)
+
         self.state["processed_events"] += 1
         self.state["last_processed_at"] = datetime.now(timezone.utc).isoformat()
 
         if deduped:
             self.state["deduped_checks"] += 1
+            # Even when content is deduped (noop comment/check output), the webhook handler
+            # may have created a fresh in_progress check run for this PR SHA. Complete that
+            # run so GitHub does not remain stuck in in_progress.
+            if event_head_sha:
+                import asyncio
+                try:
+                    asyncio.run(
+                        self._update_check_run_from_policy(
+                            repo=request.repo,
+                            pr_number=request.pr_number,
+                            head_sha=event_head_sha,
+                            outcome=eval_status,
+                        )
+                    )
+                except Exception as check_exc:
+                    self.log.error(
+                        f"Failed to update deduped check run for {request.repo} PR#{request.pr_number}: {check_exc}",
+                        exc_info=True,
+                    )
             return
 
         # Emit policy-check event
@@ -441,14 +482,11 @@ class PolicyPipeline:
             "doc_refresh_plan":  doc_refresh_plan,
             "knowledge_health":  knowledge_health,
             "repo":              request.repo,
-            "repo_full_name":    (payload.get("repo") or {}).get("full_name") or request.repo,
+            "repo_full_name":    repo_full_name,
             "tenant_id":         payload.get("tenant_id") or ((payload.get("tenant") or {}).get("id")),
             "installation_id":   payload.get("installation_id") or ((payload.get("tenant") or {}).get("installation_id")),
             "pr_number":         request.pr_number,
-            "head_sha": (
-                (payload.get("pull_request") or {}).get("head_sha")
-                or (((payload.get("pull_request") or {}).get("head") or {}).get("sha"))
-            ),
+            "head_sha":          event_head_sha,
             "correlation_id":    request.correlation_id,
             "idempotency_key":   event_idempotency,
             "summary_status":    response_payload.get("summary_status"),
@@ -468,6 +506,23 @@ class PolicyPipeline:
                 conn3.autocommit = False
                 self.event_store._update_emit_status(conn3, table="policy_check_runs", row_id=check_run_id, status="emitted")
                 conn3.commit()
+            
+            # Task 4.4.3: Update GitHub Check Run after pr.checks event is emitted
+            import asyncio
+            head_sha = out_event.get("head_sha")
+            if head_sha:
+                try:
+                    asyncio.run(self._update_check_run_from_policy(
+                        repo=request.repo,
+                        pr_number=request.pr_number,
+                        head_sha=head_sha,
+                        outcome=eval_status
+                    ))
+                except Exception as check_exc:
+                    self.log.error(
+                        f"Failed to update check run for {request.repo} PR#{request.pr_number}: {check_exc}",
+                        exc_info=True
+                    )
         except Exception as exc:
             self.state["emit_failures"] += 1
             with self._db_conn() as conn3:
@@ -492,7 +547,7 @@ class PolicyPipeline:
                 "event_type": "doc_refresh_plan",
                 "rule_set":    selected_rule_set,
                 "repo":        request.repo,
-                "repo_full_name": (payload.get("repo") or {}).get("full_name") or request.repo,
+                "repo_full_name": repo_full_name,
                 "pr_number":   request.pr_number,
                 "correlation_id":  request.correlation_id,
                 "idempotency_key": event_idempotency,
@@ -619,6 +674,288 @@ class PolicyPipeline:
             if conn2.closed == 0:
                 conn2.commit()
 
+    def _detect_doc_rewrite_conflict(
+        self,
+        conn,
+        repo: str,
+        pr_number: int,
+        bundle: Dict[str, Any],
+    ) -> Optional[str]:
+        """
+        Detect whether a doc rewrite is already in-flight for the same repo/PR.
+
+        Returns a human-readable reason string when a conflict exists, else None.
+        """
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT 1
+                    FROM meta.doc_rewrite_runs
+                    WHERE repo = %s
+                      AND pr_number = %s
+                      AND status IN ('queued_for_emit', 'emitted')
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                    """,
+                    (repo, pr_number),
+                )
+                if cur.fetchone() is not None:
+                    return "doc rewrite already queued for this PR"
+        except Exception:
+            # Conflict detection is best-effort and should not block policy handling.
+            return None
+        return None
+
+    # ------------------------------------------------------------------
+    # Ingestion event consumer
+    # ------------------------------------------------------------------
+
+    def _consume_ingestion_events(self, payload: Dict[str, Any]) -> None:
+        """
+        Consume repo.ingestion Kafka events and dispatch to ingestion pipeline.
+        
+        Dispatches to ingest_repo() when changed_files is None (full ingestion).
+        Dispatches to ingest_on_push() when changed_files is a non-empty list (incremental).
+        
+        Args:
+            payload: Kafka event payload with repo, changed_files, triggered_by, commit_sha
+        """
+        try:
+            from ..dependencies import get_ingestion_pipeline
+            import asyncio
+            import uuid
+            
+            repo = payload.get("repo")
+            changed_files = payload.get("changed_files")
+            triggered_by = payload.get("triggered_by", "kafka")
+            commit_sha = payload.get("commit_sha")
+            
+            if not repo:
+                self.log.warning("Ignoring repo.ingestion event with missing repo field")
+                return
+            
+            pipeline = get_ingestion_pipeline()
+            run_id = str(uuid.uuid4())
+            
+            # Dispatch based on changed_files
+            if changed_files is None:
+                # Full ingestion
+                self.log.info(f"Triggering full ingestion for {repo} (run_id={run_id})")
+                asyncio.run(pipeline.ingest_repo(
+                    repo=repo,
+                    run_id=run_id,
+                    triggered_by=triggered_by,
+                    commit_sha=commit_sha,
+                ))
+            elif isinstance(changed_files, list) and len(changed_files) > 0:
+                # Incremental ingestion
+                self.log.info(f"Triggering incremental ingestion for {repo}: {len(changed_files)} files (run_id={run_id})")
+                asyncio.run(pipeline.ingest_on_push(
+                    repo=repo,
+                    run_id=run_id,
+                    changed_files=changed_files,
+                    triggered_by=triggered_by,
+                    commit_sha=commit_sha,
+                ))
+            else:
+                self.log.warning(f"Ignoring repo.ingestion event with empty changed_files list for {repo}")
+                
+        except Exception as exc:
+            self.log.error(f"Failed to process repo.ingestion event: {exc}", exc_info=True)
+
+    # ------------------------------------------------------------------
+    # Ingestion complete handler
+    # ------------------------------------------------------------------
+
+    async def _handle_ingestion_complete(self, payload: Dict[str, Any]) -> None:
+        """
+        Handle repo.ingestion.complete Kafka events.
+        
+        Records temporal snapshot first, then invalidates the impact analyzer cache for the repo.
+        Order is important: snapshot before stale cache is cleared.
+        
+        Args:
+            payload: Kafka event payload with repo field and ingestion result data
+        """
+        repo = payload.get("repo")
+        if not repo:
+            self.log.warning("Ignoring repo.ingestion.complete event with missing repo field")
+            return
+        
+        # Record temporal snapshot (Task 3.4.1 & 3.4.2)
+        # Must happen BEFORE cache invalidation to capture state before it's cleared
+        try:
+            from app.ingestion.ingestion_pipeline import IngestionResult
+            # Filter out fields not in IngestionResult dataclass (e.g., triggered_at)
+            result_fields = {
+                "repo": payload.get("repo"),
+                "run_id": payload.get("run_id"),
+                "files_processed": payload.get("files_processed", 0),
+                "chunks_created": payload.get("chunks_created", 0),
+                "embeddings_created": payload.get("embeddings_created", 0),
+                "services_detected": payload.get("services_detected", 0),
+                "duration_seconds": payload.get("duration_seconds", 0.0),
+                "status": payload.get("status", "unknown"),
+            }
+            ingestion_result = IngestionResult(**result_fields)
+            snapshot_id = await self.time_travel.record_ingestion_snapshot(repo, ingestion_result)
+            self.log.info(f"Recorded temporal snapshot {snapshot_id} for repo {repo}")
+        except Exception as exc:
+            self.log.error(f"Failed to record temporal snapshot for {repo}: {exc}", exc_info=True)
+        
+        # Invalidate impact analyzer cache (Task 2.2.1)
+        if self.impact_analyzer:
+            try:
+                self.impact_analyzer.invalidate_cache(repo)
+                self.log.info(f"Invalidated impact analyzer cache for repo {repo}")
+            except Exception as exc:
+                self.log.error(f"Failed to invalidate impact analyzer cache for {repo}: {exc}", exc_info=True)
+        else:
+            self.log.debug(f"Impact analyzer not configured, skipping cache invalidation for {repo}")
+
+    def _record_policy_temporal(self, repo: str, run_id: int, findings: list[dict]) -> None:
+        """
+        Record policy findings as temporal snapshot events (Task 3.4.3).
+        
+        Called after policy evaluation completes in _handle_message().
+        Only records DOC_DRIFT_* and BREAKING_* findings.
+        
+        Args:
+            repo: Repository name
+            run_id: Policy check run ID
+            findings: List of finding dictionaries from policy evaluation
+        """
+        try:
+            self.time_travel.record_policy_event(repo, run_id, findings)
+            # Count relevant findings for logging
+            relevant_count = sum(
+                1 for f in findings
+                if f.get("rule_id", "").startswith(("DOC_DRIFT_", "BREAKING_"))
+            )
+            if relevant_count > 0:
+                self.log.info(f"Recorded {relevant_count} policy findings for {repo} run {run_id}")
+        except Exception as exc:
+            self.log.error(f"Failed to record policy temporal events for {repo} run {run_id}: {exc}", exc_info=True)
+
+    async def _update_check_run_from_policy(
+        self, repo: str, pr_number: int, head_sha: str, outcome: str
+    ) -> None:
+        """
+        Update GitHub Check Run status from policy evaluation result (Task 4.4.1 & 4.4.2).
+        
+        Queries meta.check_run_tracking to find the check_run_id created by the webhook handler,
+        then PATCH /repos/{owner}/{repo}/check-runs/{check_run_id} with status="completed",
+        conclusion="success" when outcome == "pass" else "failure", completed_at=now.isoformat().
+        
+        Returns silently if no row is found (webhook may not have created a check run yet).
+        
+        Args:
+            repo: Repository name (e.g., "owner/repo")
+            pr_number: Pull request number
+            head_sha: Git commit SHA for the PR head
+            outcome: Policy evaluation outcome ("pass", "fail", "warn", "info")
+        """
+        try:
+            with self._db_conn() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        SELECT check_run_id
+                        FROM meta.check_run_tracking
+                        WHERE repo = %s AND pr_number = %s AND head_sha = %s
+                        """,
+                        (repo, pr_number, head_sha)
+                    )
+                    row = cur.fetchone()
+                    
+                    if row is None:
+                        # No check run tracking found - return silently as per spec
+                        self.log.debug(
+                            f"No check_run_id found for {repo} PR#{pr_number} SHA {head_sha[:7]}"
+                        )
+                        return
+                    
+                    check_run_id = row[0]
+                    self.log.info(
+                        f"Found check_run_id {check_run_id} for {repo} PR#{pr_number} SHA {head_sha[:7]}"
+                    )
+            
+            # Task 4.4.2: PATCH check run with completed status
+            # Determine conclusion based on outcome
+            conclusion = "success" if outcome == "pass" else "failure"
+            
+            # Get GitHub token (reusing the pattern from agent-service/github_bridge.py)
+            # We need to get the installation_id from the tenant context
+            # For now, use the default installation_id from environment
+            import os
+            import jwt
+            import requests
+            from datetime import datetime, timedelta, timezone
+            
+            github_api_base = os.getenv("GITHUB_API_BASE_URL", "https://api.github.com")
+            app_id = os.getenv("GITHUB_APP_ID", "").strip()
+            private_key_path = os.getenv("GITHUB_APP_PRIVATE_KEY_PATH", "/run/secrets/github_app.pem").strip()
+            installation_id = os.getenv("GITHUB_INSTALLATION_ID", "").strip()
+            
+            if not all([app_id, private_key_path, installation_id]):
+                self.log.error("Missing GitHub App credentials for check run update")
+                return
+            
+            # Create JWT
+            now = datetime.now(timezone.utc)
+            jwt_payload = {
+                "iat": int((now - timedelta(seconds=60)).timestamp()),
+                "exp": int((now + timedelta(minutes=9)).timestamp()),
+                "iss": app_id,
+            }
+            with open(private_key_path, "r", encoding="utf-8") as f:
+                private_key = f.read()
+            app_jwt = jwt.encode(jwt_payload, private_key, algorithm="RS256")
+            
+            # Get installation token
+            token_url = f"{github_api_base}/app/installations/{installation_id}/access_tokens"
+            token_headers = {
+                "Authorization": f"Bearer {app_jwt}",
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+            }
+            token_resp = requests.post(token_url, headers=token_headers, timeout=20)
+            token_resp.raise_for_status()
+            token = token_resp.json()["token"]
+            
+            # PATCH check run
+            check_run_url = f"{github_api_base}/repos/{repo}/check-runs/{check_run_id}"
+            check_run_headers = {
+                "Authorization": f"token {token}",
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+            }
+            check_run_payload = {
+                "status": "completed",
+                "conclusion": conclusion,
+                "completed_at": datetime.now(timezone.utc).isoformat(),
+            }
+            
+            check_run_resp = requests.patch(
+                check_run_url,
+                headers=check_run_headers,
+                json=check_run_payload,
+                timeout=30
+            )
+            check_run_resp.raise_for_status()
+            
+            self.log.info(
+                f"Updated check_run_id {check_run_id} for {repo} PR#{pr_number}: "
+                f"status=completed, conclusion={conclusion}"
+            )
+                    
+        except Exception as exc:
+            self.log.error(
+                f"Failed to update check run for {repo} PR#{pr_number}: {exc}",
+                exc_info=True
+            )
+
     # ------------------------------------------------------------------
     # Kafka consumer loop
     # ------------------------------------------------------------------
@@ -627,8 +964,15 @@ class PolicyPipeline:
         self.state["running"] = True
         try:
             ensure_schema(self._db_conn)
+            
+            # Verify temporal index (advisory check only, does not block startup)
+            self.time_travel._verify_temporal_index()
+            
+            # Subscribe to repo.events, repo.ingestion, and repo.ingestion.complete topics
             self.consumer = KafkaConsumer(
                 self.consumer_topic,
+                "repo.ingestion",  # Add ingestion topic
+                "repo.ingestion.complete",  # Add ingestion complete topic
                 bootstrap_servers=self.kafka_brokers,
                 group_id=self.consumer_group,
                 enable_auto_commit=True,
@@ -665,15 +1009,22 @@ class PolicyPipeline:
                     self._log_error("emit retry processing failed", exc)
 
                 batch = self.consumer.poll(timeout_ms=1000, max_records=50)
-                for records in batch.values():
+                for topic_partition, records in batch.items():
                     for record in records:
                         try:
-                            self._handle_message(
-                                record.value,
-                                source_topic=getattr(record, "topic", self.consumer_topic),
-                                source_partition=getattr(record, "partition", -1),
-                                source_offset=str(getattr(record, "offset", "unknown")),
-                            )
+                            # Route to appropriate handler based on topic
+                            if record.topic == "repo.ingestion":
+                                self._consume_ingestion_events(record.value)
+                            elif record.topic == "repo.ingestion.complete":
+                                import asyncio
+                                asyncio.run(self._handle_ingestion_complete(record.value))
+                            else:
+                                self._handle_message(
+                                    record.value,
+                                    source_topic=getattr(record, "topic", self.consumer_topic),
+                                    source_partition=getattr(record, "partition", -1),
+                                    source_offset=str(getattr(record, "offset", "unknown")),
+                                )
                         except Exception as exc:
                             self.state["last_error"] = str(exc)
                             self._log_error("policy pipeline message handling failed", exc)

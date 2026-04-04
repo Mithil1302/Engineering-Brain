@@ -1,0 +1,1916 @@
+[
+    {
+        "Path":  "CONFIGURATION_AUDIT_COMPLETE.md",
+        "Lines":  180,
+        "FirstLine":  {
+                          "value":  "# CONFIGURATION AUDIT - COMPLETE REPORT",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\CONFIGURATION_AUDIT_COMPLETE.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "CONFIGURATION_AUDIT_COMPLETE.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "CRITICAL_FIXES_NEEDED.md",
+        "Lines":  175,
+        "FirstLine":  {
+                          "value":  "# 🔴 CRITICAL FIXES NEEDED - DO THESE NOW",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\CRITICAL_FIXES_NEEDED.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "CRITICAL_FIXES_NEEDED.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "QUICK_FIX_REFERENCE.md",
+        "Lines":  143,
+        "FirstLine":  {
+                          "value":  "# QUICK FIX REFERENCE - Copy \u0026 Paste Ready",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\QUICK_FIX_REFERENCE.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "QUICK_FIX_REFERENCE.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "REQUIRED_CONFIGURATION.md",
+        "Lines":  178,
+        "FirstLine":  {
+                          "value":  "# REQUIRED CONFIGURATION - CRITICAL SETUP CHECKLIST",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\REQUIRED_CONFIGURATION.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "REQUIRED_CONFIGURATION.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK1_TESTING_README.md",
+        "Lines":  289,
+        "FirstLine":  {
+                          "value":  "# Task 1 Testing - Complete Guide",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK1_TESTING_README.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK1_TESTING_README.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK1_TEST_SUMMARY.md",
+        "Lines":  230,
+        "FirstLine":  {
+                          "value":  "# Task 1 Testing Summary",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK1_TEST_SUMMARY.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK1_TEST_SUMMARY.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK2_COMPLETE.md",
+        "Lines":  124,
+        "FirstLine":  {
+                          "value":  "# Task 2 Complete ✅",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK2_COMPLETE.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK2_COMPLETE.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK2_FINAL_RESULTS.md",
+        "Lines":  50,
+        "FirstLine":  {
+                          "value":  "# Task 2 Final Test Results ✅",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK2_FINAL_RESULTS.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK2_FINAL_RESULTS.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK2_QUICK_TEST.md",
+        "Lines":  66,
+        "FirstLine":  {
+                          "value":  "# Task 2 Quick Test Guide",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK2_QUICK_TEST.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK2_QUICK_TEST.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK2_TESTING_README.md",
+        "Lines":  245,
+        "FirstLine":  {
+                          "value":  "# Task 2 Testing Guide",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK2_TESTING_README.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK2_TESTING_README.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK2_TEST_RESULTS.md",
+        "Lines":  151,
+        "FirstLine":  {
+                          "value":  "# Task 2 Test Results",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK2_TEST_RESULTS.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK2_TEST_RESULTS.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK2_TEST_SUMMARY.md",
+        "Lines":  185,
+        "FirstLine":  {
+                          "value":  "# Task 2 Test Summary",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK2_TEST_SUMMARY.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK2_TEST_SUMMARY.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK3_TESTING_README.md",
+        "Lines":  91,
+        "FirstLine":  {
+                          "value":  "# Task 3 Testing Guide",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK3_TESTING_README.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK3_TESTING_README.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK3_TEST_SUMMARY.md",
+        "Lines":  133,
+        "FirstLine":  {
+                          "value":  "# Task 3: Temporal Graph Data Population - Test Summary",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK3_TEST_SUMMARY.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK3_TEST_SUMMARY.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK_14_1_1_FINDINGS.md",
+        "Lines":  45,
+        "FirstLine":  {
+                          "value":  "# Task 14.1.1 Findings",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK_14_1_1_FINDINGS.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK_14_1_1_FINDINGS.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK_14_1_1_STATUS.md",
+        "Lines":  58,
+        "FirstLine":  {
+                          "value":  "# Task 14.1.1 Status Report",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK_14_1_1_STATUS.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK_14_1_1_STATUS.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK_14_1_2_FINDINGS.md",
+        "Lines":  130,
+        "FirstLine":  {
+                          "value":  "# Task 14.1.2 Findings",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK_14_1_2_FINDINGS.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK_14_1_2_FINDINGS.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK_14_1_2_FIX.md",
+        "Lines":  34,
+        "FirstLine":  {
+                          "value":  "# Task 14.1.2 Fix Summary",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK_14_1_2_FIX.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK_14_1_2_FIX.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TASK_14_1_SOLUTION.md",
+        "Lines":  164,
+        "FirstLine":  {
+                          "value":  "# Task 14.1.1 \u0026 14.1.2 - Best Solution",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TASK_14_1_SOLUTION.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TASK_14_1_SOLUTION.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "TESTING_COMPLETE.md",
+        "Lines":  217,
+        "FirstLine":  {
+                          "value":  "# ✅ Task 1 Testing Suite - COMPLETE",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\TESTING_COMPLETE.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "TESTING_COMPLETE.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "_full_file_inventory.txt",
+        "Lines":  57454,
+        "FirstLine":  {
+                          "value":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\.env",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\_full_file_inventory.txt",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "_full_file_inventory.txt",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "_full_tracked_file_read_report.json",
+        "Lines":  58064,
+        "FirstLine":  {
+                          "value":  "[",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\_full_tracked_file_read_report.json",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "_full_tracked_file_read_report.json",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "_tracked_files_inventory.txt",
+        "Lines":  1766,
+        "FirstLine":  {
+                          "value":  ".gitignore",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\_tracked_files_inventory.txt",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "_tracked_files_inventory.txt",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "check_services.bat",
+        "Lines":  56,
+        "FirstLine":  {
+                          "value":  "@echo off",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\check_services.bat",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "check_services.bat",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "fix_embeddings_table.bat",
+        "Lines":  22,
+        "FirstLine":  {
+                          "value":  "@echo off",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\fix_embeddings_table.bat",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "fix_embeddings_table.bat",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "infra/postgres/init/002-enhanced-graph-schema.sql",
+        "Lines":  386,
+        "FirstLine":  {
+                          "value":  "-- KA-CHOW Enhanced Graph Schema",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\infra\\postgres\\init\\002-enhanced-graph-schema.sql",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\infra\\postgres\\init",
+                          "PSChildName":  "002-enhanced-graph-schema.sql",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "openapi.json",
+        "Lines":  10315,
+        "FirstLine":  {
+                          "value":  "{",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\openapi.json",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "openapi.json",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "openapi_docs.html",
+        "Lines":  30,
+        "FirstLine":  {
+                          "value":  "",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\openapi_docs.html",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "openapi_docs.html",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "test_gemini_models.py",
+        "Lines":  37,
+        "FirstLine":  {
+                          "value":  "#!/usr/bin/env python3",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\test_gemini_models.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "test_gemini_models.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "test_github_auth.py",
+        "Lines":  33,
+        "FirstLine":  {
+                          "value":  "#!/usr/bin/env python3",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\test_github_auth.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "test_github_auth.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "test_ingestion_1min.py",
+        "Lines":  99,
+        "FirstLine":  {
+                          "value":  "#!/usr/bin/env python3",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\test_ingestion_1min.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "test_ingestion_1min.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "test_ingestion_status.py",
+        "Lines":  96,
+        "FirstLine":  {
+                          "value":  "#!/usr/bin/env python3",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\test_ingestion_status.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "test_ingestion_status.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "test_ingestion_trigger.py",
+        "Lines":  71,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\test_ingestion_trigger.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "test_ingestion_trigger.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "test_ingestion_with_real_repo.py",
+        "Lines":  190,
+        "FirstLine":  {
+                          "value":  "#!/usr/bin/env python3",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\test_ingestion_with_real_repo.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "test_ingestion_with_real_repo.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "test_task1.bat",
+        "Lines":  25,
+        "FirstLine":  {
+                          "value":  "@echo off",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\test_task1.bat",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "test_task1.bat",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "test_task1.sh",
+        "Lines":  25,
+        "FirstLine":  {
+                          "value":  "#!/bin/bash",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\test_task1.sh",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "test_task1.sh",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "test_task2.bat",
+        "Lines":  78,
+        "FirstLine":  {
+                          "value":  "@echo off",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\test_task2.bat",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                          "PSChildName":  "test_task2.bat",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/.env.example",
+        "Lines":  162,
+        "FirstLine":  {
+                          "value":  "# ==============================================================================",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\.env.example",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service",
+                          "PSChildName":  ".env.example",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/app/qa/coreference.py",
+        "Lines":  146,
+        "FirstLine":  {
+                          "value":  "\"\"\"Coreference resolution for multi-turn conversations.",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\app\\qa\\coreference.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\app\\qa",
+                          "PSChildName":  "coreference.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/app/qa/gap_detector.py",
+        "Lines":  159,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\app\\qa\\gap_detector.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\app\\qa",
+                          "PSChildName":  "gap_detector.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/app/qa/session_store.py",
+        "Lines":  69,
+        "FirstLine":  {
+                          "value":  "\"\"\"Simple in-memory session store for conversation state.",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\app\\qa\\session_store.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\app\\qa",
+                          "PSChildName":  "session_store.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/pytest.ini",
+        "Lines":  14,
+        "FirstLine":  {
+                          "value":  "[pytest]",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\pytest.ini",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service",
+                          "PSChildName":  "pytest.ini",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/run_tests.py",
+        "Lines":  73,
+        "FirstLine":  {
+                          "value":  "#!/usr/bin/env python3",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\run_tests.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service",
+                          "PSChildName":  "run_tests.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/TASK1_TEST_GUIDE.md",
+        "Lines":  180,
+        "FirstLine":  {
+                          "value":  "# Task 1 Testing Guide",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\TASK1_TEST_GUIDE.md",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "TASK1_TEST_GUIDE.md",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/run_task1_tests.sh",
+        "Lines":  15,
+        "FirstLine":  {
+                          "value":  "#!/bin/bash",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\run_task1_tests.sh",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "run_task1_tests.sh",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_coreference_endpoint_pattern.py",
+        "Lines":  89,
+        "FirstLine":  {
+                          "value":  "\"\"\"Test for task 6.1.3: Endpoint pattern extraction with segment filtering.\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_coreference_endpoint_pattern.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_coreference_endpoint_pattern.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_freshness_scoring.py",
+        "Lines":  142,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_freshness_scoring.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_freshness_scoring.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_gap_detector_service_inference.py",
+        "Lines":  112,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_gap_detector_service_inference.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_gap_detector_service_inference.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_ingestion_chunker.py",
+        "Lines":  387,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_ingestion_chunker.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_ingestion_chunker.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_ingestion_crawler.py",
+        "Lines":  246,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_ingestion_crawler.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_ingestion_crawler.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_ingestion_env_validation.py",
+        "Lines":  161,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_ingestion_env_validation.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_ingestion_env_validation.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_task2_environment_config.py",
+        "Lines":  252,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_task2_environment_config.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_task2_environment_config.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_task2_impact_analyzer.py",
+        "Lines":  461,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_task2_impact_analyzer.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_task2_impact_analyzer.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_task2_pipeline_integration.py",
+        "Lines":  287,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_task2_pipeline_integration.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_task2_pipeline_integration.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_task3_simple.py",
+        "Lines":  161,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_task3_simple.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_task3_simple.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_task3_temporal_graph.py",
+        "Lines":  518,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_task3_temporal_graph.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_task3_temporal_graph.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_task7_2_8_freshness_chainstep.py",
+        "Lines":  62,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_task7_2_8_freshness_chainstep.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_task7_2_8_freshness_chainstep.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    },
+    {
+        "Path":  "worker-service/tests/test_threshold_filtering.py",
+        "Lines":  270,
+        "FirstLine":  {
+                          "value":  "\"\"\"",
+                          "PSPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests\\test_threshold_filtering.py",
+                          "PSParentPath":  "C:\\Users\\Divya\\OneDrive\\Desktop\\Eng Brain\\worker-service\\tests",
+                          "PSChildName":  "test_threshold_filtering.py",
+                          "PSDrive":  {
+                                          "CurrentLocation":  "Users\\Divya\\OneDrive\\Desktop\\Eng Brain",
+                                          "Name":  "C",
+                                          "Provider":  "Microsoft.PowerShell.Core\\FileSystem",
+                                          "Root":  "C:\\",
+                                          "Description":  "Windows-SSD",
+                                          "MaximumSize":  null,
+                                          "Credential":  "System.Management.Automation.PSCredential",
+                                          "DisplayRoot":  null
+                                      },
+                          "PSProvider":  {
+                                             "ImplementingType":  "Microsoft.PowerShell.Commands.FileSystemProvider",
+                                             "HelpFile":  "System.Management.Automation.dll-Help.xml",
+                                             "Name":  "FileSystem",
+                                             "PSSnapIn":  "Microsoft.PowerShell.Core",
+                                             "ModuleName":  "Microsoft.PowerShell.Core",
+                                             "Module":  null,
+                                             "Description":  "",
+                                             "Capabilities":  52,
+                                             "Home":  "C:\\Users\\Divya",
+                                             "Drives":  "C"
+                                         },
+                          "ReadCount":  1
+                      }
+    }
+]

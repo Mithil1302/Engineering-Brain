@@ -45,6 +45,8 @@ class QAResponse(BaseModel):
     answer: str
     confidence: float
     intent: str
+    original_question: str
+    rewritten_question: str | None = None
     citations: List[QACitation] = Field(default_factory=list)
     source_citations: List[SourceCitation] = Field(default_factory=list)
     source_breakdown: Dict[str, int] = Field(default_factory=dict)

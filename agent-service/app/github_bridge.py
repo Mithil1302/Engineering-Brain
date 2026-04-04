@@ -151,6 +151,16 @@ class GithubBridge:
                                             UNIQUE (tenant_id, repo_full_name)
                                         );
 
+                                        -- Task 4.6.1: Create meta.check_run_tracking table
+                                        CREATE TABLE IF NOT EXISTS meta.check_run_tracking (
+                                            repo TEXT NOT NULL,
+                                            pr_number INTEGER NOT NULL,
+                                            head_sha TEXT NOT NULL,
+                                            check_run_id BIGINT NOT NULL,
+                                            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                                            PRIMARY KEY (repo, pr_number, head_sha)
+                                        );
+
                                         CREATE INDEX IF NOT EXISTS idx_github_delivery_state_repo_pr ON meta.github_delivery_state (repo_full_name, pr_number);
                     CREATE INDEX IF NOT EXISTS idx_github_delivery_attempts_created ON meta.github_delivery_attempts (created_at DESC);
                                         CREATE INDEX IF NOT EXISTS idx_tenant_installations_tenant_repo ON meta.tenant_installations (tenant_id, repo_full_name);
@@ -221,28 +231,85 @@ class GithubBridge:
         if state.failures >= self.circuit_failure_threshold:
             state.open_until_epoch = time.time() + self.circuit_cooldown_sec
 
-    def verify_webhook_signature(self, body: bytes, signature_header: Optional[str]) -> bool:
+    def _verify_webhook_signature(self, body: bytes, signature_header: Optional[str]) -> bool:
+        """Verify GitHub webhook signature using HMAC-SHA256.
+        
+        Args:
+            body: Raw request body bytes (must be read BEFORE json.loads())
+            signature_header: X-Hub-Signature-256 header value
+            
+        Returns:
+            True if signature is valid, False otherwise
+        """
         if not self.webhook_secret:
+            self.log.critical("GITHUB_WEBHOOK_SECRET is not set — webhook signature verification failed, rejecting request")
             return False
         if not signature_header or not signature_header.startswith("sha256="):
             return False
-        provided = signature_header.split("=", 1)[1]
-        computed = hmac.new(self.webhook_secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
+        provided = signature_header.strip()
+        computed = "sha256=" + hmac.new(self.webhook_secret.encode(), body, hashlib.sha256).hexdigest()
         return hmac.compare_digest(provided, computed)
 
-    def _derive_tenant_from_installation_payload(self, payload: Dict[str, Any], installation_id: str) -> str:
-        account = ((payload.get("installation") or {}).get("account") or {})
-        login = account.get("login")
-        if login:
-            return f"gh:{login}"
-        return f"installation:{installation_id}"
+    def verify_webhook_signature(self, body: bytes, signature_header: Optional[str]) -> bool:
+        """Public wrapper for webhook signature verification.
+        
+        Args:
+            body: Raw request body bytes (must be read BEFORE json.loads())
+            signature_header: X-Hub-Signature-256 header value
+            
+        Returns:
+            True if signature is valid, False otherwise
+        """
+        return self._verify_webhook_signature(body, signature_header)
 
-    def process_github_webhook(self, event_type: str, payload: Dict[str, Any], delivery_id: Optional[str] = None) -> Dict[str, Any]:
-        self._ensure_schema()
+    def _process_webhook_event(self, event_type: str, payload: Dict[str, Any], delivery_id: Optional[str] = None) -> Dict[str, Any]:
+        """Dispatcher for GitHub webhook events.
+        
+        Handles pull_request, push, installation, and installation_repositories events.
+        Logs DEBUG for unhandled event types.
+        
+        Args:
+            event_type: GitHub event type from X-GitHub-Event header
+            payload: Parsed webhook payload
+            delivery_id: GitHub delivery ID from X-GitHub-Delivery header
+            
+        Returns:
+            Dict with processing result
+        """
+        try:
+            if event_type == "pull_request":
+                return self._handle_pull_request_event(payload, delivery_id)
+            
+            if event_type == "push":
+                return self._handle_push_event(payload, delivery_id)
+            
+            if event_type in {"installation", "installation_repositories"}:
+                return self._handle_installation_event(event_type, payload, delivery_id)
+            
+            # Unhandled event type
+            self.log.debug(f"Unhandled webhook event type: {event_type}, delivery_id={delivery_id}")
+            return {
+                "ok": True,
+                "ignored": True,
+                "event_type": event_type,
+                "delivery_id": delivery_id,
+                "reason": "event_type_not_handled"
+            }
+            
+        except Exception as e:
+            self.log.error(f"Error processing webhook event type={event_type}, delivery_id={delivery_id}: {e}", exc_info=True)
+            return {
+                "ok": False,
+                "event_type": event_type,
+                "delivery_id": delivery_id,
+                "error": str(e)
+            }
 
-        if event_type not in {"installation", "installation_repositories"}:
-            return {"ok": True, "ignored": True, "event_type": event_type, "delivery_id": delivery_id}
-
+    def _handle_installation_event(self, event_type: str, payload: Dict[str, Any], delivery_id: Optional[str]) -> Dict[str, Any]:
+        """Handle installation and installation_repositories webhook events.
+        
+        Extracted from process_github_webhook for use by _process_webhook_event dispatcher.
+        """
         action = str(payload.get("action") or "")
         installation = payload.get("installation") or {}
         installation_id = str(installation.get("id") or "").strip()
@@ -290,6 +357,252 @@ class GithubBridge:
             "installation_id": installation_id,
             "updated_count": len(updated),
             "delivery_id": delivery_id,
+        }
+
+    def _handle_push_event(self, payload: Dict[str, Any], delivery_id: Optional[str]) -> Dict[str, Any]:
+        """Handle push webhook events.
+        
+        Task 4.3 implementation:
+        - Extract pushed_branch from ref
+        - Return early if not default branch
+        - Collect changed files from commits (Task 4.3.2)
+        - Produce repo.ingestion Kafka event (Task 4.3.3)
+        """
+        # Task 4.3.1: Extract pushed_branch and check if it's default branch
+        ref = payload.get("ref", "")
+        pushed_branch = ref.replace("refs/heads/", "")
+        
+        repo = payload.get("repository") or {}
+        default_branch = repo.get("default_branch", "")
+        
+        # Return early if not default branch
+        if pushed_branch != default_branch:
+            self.log.debug(
+                f"Push to non-default branch {pushed_branch} (default: {default_branch}), "
+                f"ignoring, delivery_id={delivery_id}"
+            )
+            return {
+                "ok": True,
+                "ignored": True,
+                "event_type": "push",
+                "pushed_branch": pushed_branch,
+                "default_branch": default_branch,
+                "delivery_id": delivery_id,
+                "reason": "non_default_branch"
+            }
+        
+        # Task 4.3.2: Collect changed files from commits
+        # Union of added, modified, removed across all commits; deduplicate with list(set(...))
+        commits = payload.get("commits", [])
+        changed_files_set = set()
+        for commit in commits:
+            changed_files_set.update(commit.get("added", []))
+            changed_files_set.update(commit.get("modified", []))
+            changed_files_set.update(commit.get("removed", []))
+        changed_files = list(changed_files_set)
+        
+        # Task 4.3.3: Produce repo.ingestion Kafka event
+        # changed_files if changed_files else None — None triggers full ingestion
+        repo_full_name = repo.get("full_name", "")
+        head_commit = payload.get("head_commit") or {}
+        commit_sha = head_commit.get("id", "")
+        
+        repo_ingestion_payload = {
+            "repo": repo_full_name,
+            "triggered_by": "webhook",
+            "changed_files": changed_files if changed_files else None,
+            "commit_sha": commit_sha,
+        }
+        
+        try:
+            if self._producer is None:
+                # Initialize producer if not already done
+                self._producer = KafkaProducer(bootstrap_servers=self.kafka_brokers)
+            
+            self._producer.send(
+                "repo.ingestion",
+                key=repo_full_name.encode("utf-8"),
+                value=json.dumps(repo_ingestion_payload).encode("utf-8"),
+            )
+            self._producer.flush(timeout=5)
+            
+            self.log.info(
+                f"Push to {pushed_branch} processed: {len(changed_files)} changed files, "
+                f"commit_sha={commit_sha}, delivery={delivery_id}"
+            )
+        except Exception as e:
+            self.log.error(f"Failed to produce repo.ingestion Kafka event for push: {e}", exc_info=True)
+            return {
+                "ok": False,
+                "event_type": "push",
+                "delivery_id": delivery_id,
+                "error": str(e),
+                "reason": "kafka_production_failed"
+            }
+        
+        return {
+            "ok": True,
+            "event_type": "push",
+            "repo": repo_full_name,
+            "pushed_branch": pushed_branch,
+            "commit_sha": commit_sha,
+            "changed_files_count": len(changed_files),
+            "delivery_id": delivery_id,
+            "status": "processed",
+        }
+
+    def _derive_tenant_from_installation_payload(self, payload: Dict[str, Any], installation_id: str) -> str:
+        account = ((payload.get("installation") or {}).get("account") or {})
+        login = account.get("login")
+        if login:
+            return f"gh:{login}"
+        return f"installation:{installation_id}"
+
+    def process_github_webhook(self, event_type: str, payload: Dict[str, Any], delivery_id: Optional[str] = None) -> Dict[str, Any]:
+        """Public entry point for processing GitHub webhook events.
+        
+        Ensures schema exists and delegates to _process_webhook_event dispatcher.
+        """
+        self._ensure_schema()
+        return self._process_webhook_event(event_type, payload, delivery_id)
+
+    def _handle_pull_request_event(self, payload: Dict[str, Any], delivery_id: Optional[str]) -> Dict[str, Any]:
+        """Handle pull_request webhook events.
+        
+        Task 4.2 implementation:
+        - Process only opened and synchronize actions
+        - Fetch changed files from GitHub API
+        - Create GitHub Check Run
+        - Store check run tracking in database
+        - Produce repo.events Kafka event
+        - Produce repo.ingestion Kafka event (if changed files non-empty)
+        """
+        action = str(payload.get("action") or "")
+        
+        # Task 4.2.1: Only process opened and synchronize actions
+        if action not in {"opened", "synchronize"}:
+            return {
+                "ok": True,
+                "ignored": True,
+                "event_type": "pull_request",
+                "action": action,
+                "reason": "action_not_handled",
+                "delivery_id": delivery_id,
+            }
+        
+        # Extract PR details
+        pr = payload.get("pull_request") or {}
+        repo = payload.get("repository") or {}
+        repo_full_name = repo.get("full_name", "")
+        pr_number = pr.get("number")
+        head_sha = pr.get("head", {}).get("sha", "")
+        base_branch = pr.get("base", {}).get("ref", "")
+        additions = pr.get("additions", 0)
+        deletions = pr.get("deletions", 0)
+        
+        if not all([repo_full_name, pr_number, head_sha]):
+            return {
+                "ok": False,
+                "event_type": "pull_request",
+                "action": action,
+                "reason": "missing_required_fields",
+                "delivery_id": delivery_id,
+            }
+        
+        # Get installation token for API calls
+        with self._db_conn() as conn:
+            tenant_ctx = self._resolve_tenant_context(conn, payload, repo_full_name)
+            if tenant_ctx is None:
+                self.log.error(f"No tenant installation mapping found for repo {repo_full_name}")
+                return {
+                    "ok": False,
+                    "event_type": "pull_request",
+                    "action": action,
+                    "reason": "no_tenant_installation",
+                    "delivery_id": delivery_id,
+                }
+            
+            token = self._installation_token(tenant_ctx.installation_id)
+        
+        # Task 4.2.2: Fetch changed files
+        changed_files = self._fetch_pr_changed_files(repo_full_name, pr_number, token)
+        
+        # Task 4.2.3 & 4.2.5: Create check run (wrapped in try-except, non-fatal)
+        check_run_id = None
+        try:
+            check_run_id = self._create_check_run(repo_full_name, head_sha, token)
+            
+            # Task 4.2.4: Store check run tracking
+            if check_run_id:
+                self._store_check_run_tracking(repo_full_name, pr_number, head_sha, check_run_id)
+        except Exception as e:
+            # Task 4.2.5: Check Run creation failure logs ERROR but does NOT halt Kafka event production
+            self.log.error(f"Failed to create check run for {repo_full_name} PR #{pr_number}: {e}", exc_info=True)
+        
+        # Task 4.2.6: Produce repo.events Kafka event
+        triggered_at = datetime.now(timezone.utc).isoformat()
+        repo_events_payload = {
+            "event_type": "pull_request",
+            "repo": repo_full_name,
+            "pr_number": pr_number,
+            "head_sha": head_sha,
+            "base_branch": base_branch,
+            "changed_files": changed_files,
+            "additions": additions,
+            "deletions": deletions,
+            "triggered_at": triggered_at,
+        }
+        
+        try:
+            if self._producer is None:
+                # Initialize producer if not already done
+                self._producer = KafkaProducer(bootstrap_servers=self.kafka_brokers)
+            
+            self._producer.send(
+                "repo.events",
+                key=f"{repo_full_name}:{pr_number}".encode("utf-8"),
+                value=json.dumps(repo_events_payload).encode("utf-8"),
+            )
+            self._producer.flush(timeout=5)
+        except Exception as e:
+            self.log.error(f"Failed to produce repo.events Kafka event: {e}", exc_info=True)
+        
+        # Task 4.2.7: Produce repo.ingestion Kafka event only when changed_files is non-empty
+        if changed_files:
+            repo_ingestion_payload = {
+                "repo": repo_full_name,
+                "triggered_by": "webhook",
+                "changed_files": changed_files,
+                "commit_sha": head_sha,
+            }
+            
+            try:
+                self._producer.send(
+                    "repo.ingestion",
+                    key=repo_full_name.encode("utf-8"),
+                    value=json.dumps(repo_ingestion_payload).encode("utf-8"),
+                )
+                self._producer.flush(timeout=5)
+            except Exception as e:
+                self.log.error(f"Failed to produce repo.ingestion Kafka event: {e}", exc_info=True)
+        
+        # Task 4.2.8: Log INFO with processing summary
+        self.log.info(
+            f"PR #{pr_number} processed: {len(changed_files)} changed files, "
+            f"check_run_id={check_run_id}, delivery={delivery_id}"
+        )
+        
+        return {
+            "ok": True,
+            "event_type": "pull_request",
+            "action": action,
+            "repo": repo_full_name,
+            "pr_number": pr_number,
+            "head_sha": head_sha,
+            "check_run_id": check_run_id,
+            "changed_files_count": len(changed_files),
+            "delivery_id": delivery_id,
+            "status": "processed",
         }
 
     def _create_app_jwt(self) -> str:
@@ -395,6 +708,120 @@ class GithubBridge:
         resp = requests.get(url, headers=headers, timeout=20)
         resp.raise_for_status()
         return resp.json()["head"]["sha"]
+
+    def _fetch_pr_changed_files(self, repo_full_name: str, pr_number: int, token: str) -> list[str]:
+        """Task 4.2.2: Fetch changed files from PR.
+        
+        GET /repos/{owner}/{repo}/pulls/{pr_number}/files with 10s timeout.
+        Returns list of filenames.
+        On failure, logs ERROR and returns empty list (policy check continues without file context).
+        """
+        try:
+            url = f"{self.github_api_base}/repos/{repo_full_name}/pulls/{pr_number}/files"
+            headers = {
+                "Authorization": f"token {token}",
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+            }
+            resp = requests.get(url, headers=headers, timeout=10)
+            resp.raise_for_status()
+            files = resp.json()
+            return [f["filename"] for f in files]
+        except Exception as e:
+            self.log.error(f"Failed to fetch changed files for {repo_full_name} PR #{pr_number}: {e}")
+            return []
+
+    def _create_check_run(self, repo_full_name: str, head_sha: str, token: str) -> int:
+        """Task 4.2.3: Create GitHub Check Run.
+        
+        POST /repos/{owner}/{repo}/check-runs with:
+        - name="KA-CHOW Policy Check"
+        - head_sha
+        - status="in_progress"
+        - started_at=now.isoformat()
+        
+        Returns check_run_id from response.
+        """
+        url = f"{self.github_api_base}/repos/{repo_full_name}/check-runs"
+        headers = {
+            "Authorization": f"token {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        payload = {
+            "name": "KA-CHOW Policy Check",
+            "head_sha": head_sha,
+            "status": "in_progress",
+            "started_at": datetime.now(timezone.utc).isoformat(),
+        }
+        resp = requests.post(url, headers=headers, json=payload, timeout=30)
+        resp.raise_for_status()
+        return resp.json()["id"]
+
+    def _store_check_run_tracking(self, repo: str, pr_number: int, head_sha: str, check_run_id: int) -> None:
+        """Task 4.2.4: Store check run tracking in database.
+        
+        INSERT INTO meta.check_run_tracking ... 
+        ON CONFLICT (repo, pr_number, head_sha) DO UPDATE SET check_run_id = EXCLUDED.check_run_id
+        
+        The ON CONFLICT handles webhook re-delivery.
+        """
+        with self._db_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO meta.check_run_tracking (repo, pr_number, head_sha, check_run_id, created_at)
+                    VALUES (%s, %s, %s, %s, NOW())
+                    ON CONFLICT (repo, pr_number, head_sha) 
+                    DO UPDATE SET check_run_id = EXCLUDED.check_run_id
+                    """,
+                    (repo, pr_number, head_sha, check_run_id),
+                )
+            conn.commit()
+
+    def _post_pr_comment(self, repo_full_name: str, pr_number: int, findings: list[dict], token: str) -> None:
+        """Task 4.5.1: Post PR comment with formatted findings.
+        
+        Task 4.5.2: Format findings as markdown: each finding as a bullet with 
+        rule_id in bold, message, and fix_url as a link if present.
+        
+        Task 4.5.3: POST /repos/{owner}/{repo}/issues/{pr_number}/comments with the formatted body.
+        
+        Args:
+            repo_full_name: Repository full name (owner/repo)
+            pr_number: Pull request number
+            findings: List of finding dicts with rule_id, message, and optional fix_url
+            token: GitHub installation token
+        """
+        # Task 4.5.2: Format findings as markdown
+        markdown_lines = ["## KA-CHOW Policy Check Results\n"]
+        
+        for finding in findings:
+            rule_id = finding.get("rule_id", "UNKNOWN")
+            message = finding.get("message", "No message provided")
+            fix_url = finding.get("fix_url")
+            
+            # Format: bullet with rule_id in bold, message, and fix_url as link if present
+            line = f"- **{rule_id}**: {message}"
+            if fix_url:
+                line += f" ([Fix Guide]({fix_url}))"
+            markdown_lines.append(line)
+        
+        markdown_body = "\n".join(markdown_lines)
+        
+        # Task 4.5.3: POST comment to GitHub
+        url = f"{self.github_api_base}/repos/{repo_full_name}/issues/{pr_number}/comments"
+        headers = {
+            "Authorization": f"token {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        payload = {"body": markdown_body}
+        
+        resp = requests.post(url, headers=headers, json=payload, timeout=30)
+        resp.raise_for_status()
+        
+        self.log.info(f"Posted PR comment to {repo_full_name} PR #{pr_number} with {len(findings)} findings")
 
     @staticmethod
     def _looks_like_commit_sha(value: Optional[str]) -> bool:
@@ -655,24 +1082,60 @@ class GithubBridge:
                 int(pr_number),
             )
 
-            check_run_id, check_req, check_resp, check_status = self._create_or_update_check_run(
-                token=token,
-                repo_full_name=repo_full_name,
-                head_sha=head_sha,
-                summary_status=event.get("summary_status", "warn"),
-                markdown_comment=event.get("markdown_comment", ""),
-                external_id=comment_key,
-                existing_check_run_id=state_row.get("check_run_id"),
-            )
+            # Check run update — non-fatal. A DNS/network failure here must NOT
+            # block _post_pr_comment which carries the actual findings for the user.
+            check_run_id = state_row.get("check_run_id")
+            check_req: Dict[str, Any] = {}
+            check_resp: Dict[str, Any] = {}
+            check_status = 0
+            try:
+                check_run_id, check_req, check_resp, check_status = self._create_or_update_check_run(
+                    token=token,
+                    repo_full_name=repo_full_name,
+                    head_sha=head_sha,
+                    summary_status=event.get("summary_status", "warn"),
+                    markdown_comment=event.get("markdown_comment", ""),
+                    external_id=comment_key,
+                    existing_check_run_id=state_row.get("check_run_id"),
+                )
+            except Exception as cr_exc:
+                self.log.error(
+                    f"Check run update failed for {repo_full_name} PR#{pr_number} (non-fatal): {cr_exc}",
+                    exc_info=True,
+                )
 
-            comment_id, comment_req, comment_resp, comment_status = self._create_or_update_comment(
-                token=token,
-                repo_full_name=repo_full_name,
-                pr_number=int(pr_number),
-                markdown_comment=event.get("markdown_comment", ""),
-                action=action,
-                existing_comment_id=state_row.get("comment_id"),
-            )
+            # PR markdown comment — also non-fatal
+            comment_id = state_row.get("comment_id")
+            comment_req: Dict[str, Any] = {}
+            comment_resp: Dict[str, Any] = {}
+            comment_status = 0
+            try:
+                comment_id, comment_req, comment_resp, comment_status = self._create_or_update_comment(
+                    token=token,
+                    repo_full_name=repo_full_name,
+                    pr_number=int(pr_number),
+                    markdown_comment=event.get("markdown_comment", ""),
+                    action=action,
+                    existing_comment_id=state_row.get("comment_id"),
+                )
+            except Exception as cmt_exc:
+                self.log.error(
+                    f"PR markdown comment failed for {repo_full_name} PR#{pr_number} (non-fatal): {cmt_exc}",
+                    exc_info=True,
+                )
+
+            # Task 4.5.4: Post findings comment — ALWAYS attempted when findings non-empty,
+            # independent of check-run / markdown-comment success above.
+            findings = event.get("findings", [])
+            if findings:
+                try:
+                    self._post_pr_comment(repo_full_name, int(pr_number), findings, token)
+                except Exception as comment_exc:
+                    self.log.error(
+                        f"Failed to post PR comment for {repo_full_name} PR#{pr_number}: {comment_exc}",
+                        exc_info=True,
+                    )
+
 
             with conn.cursor() as cur:
                 cur.execute(
@@ -771,7 +1234,6 @@ class GithubBridge:
                 group_id=self.consumer_group,
                 enable_auto_commit=True,
                 auto_offset_reset="latest",
-                value_deserializer=lambda b: json.loads(b.decode("utf-8")),
                 consumer_timeout_ms=1000,
             )
             self._producer = KafkaProducer(bootstrap_servers=self.kafka_brokers)
@@ -780,9 +1242,32 @@ class GithubBridge:
                 batch = self._consumer.poll(timeout_ms=1000, max_records=50)
                 for records in batch.values():
                     for record in records:
+                        event = None
+                        try:
+                            raw = record.value
+                            if isinstance(raw, (bytes, bytearray)):
+                                event = json.loads(raw.decode("utf-8"))
+                            elif isinstance(raw, str):
+                                event = json.loads(raw)
+                            elif isinstance(raw, dict):
+                                event = raw
+                            else:
+                                raise ValueError(f"unsupported kafka payload type: {type(raw).__name__}")
+                        except Exception as parse_exc:
+                            self.state["skipped"] += 1
+                            self.state["last_error"] = f"Malformed Kafka message on {self.input_topic}: {parse_exc}"
+                            self.log.error(
+                                "Skipping malformed Kafka message on topic %s partition=%s offset=%s: %s",
+                                self.input_topic,
+                                getattr(record, "partition", "?"),
+                                getattr(record, "offset", "?"),
+                                parse_exc,
+                            )
+                            continue
+
                         self.state["processed"] += 1
                         self.state["last_processed_at"] = datetime.now(timezone.utc).isoformat()
-                        self._handle_message(record.value)
+                        self._handle_message(event)
         except Exception as exc:
             self.state["last_error"] = str(exc)
             try:

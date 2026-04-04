@@ -65,7 +65,7 @@ services:
       - qdrant_data:/qdrant/storage
 
   postgres:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:pg15
     ports:
       - "5432:5432"
     environment:
@@ -141,6 +141,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brain}
       POSTGRES_DB: ${POSTGRES_DB:-brain}
       POSTGRES_POOL_MAX: 10
+      PROTO_PATH: /app/proto/services.proto
     ports:
       - "3001:3001"
     healthcheck:
@@ -215,6 +216,30 @@ services:
       retries: 10
       start_period: 20s
 
+  backend:
+    build: ./backend
+    depends_on:
+      worker-service:
+        condition: service_healthy
+      agent-service:
+        condition: service_healthy
+      graph-service:
+        condition: service_healthy
+    environment:
+      WORKER_SERVICE_URL: http://worker-service:8003
+      AGENT_SERVICE_URL: http://agent-service:8002
+      GRAPH_SERVICE_URL: http://graph-service:8001
+      POLICY_ADMIN_TOKEN: ${POLICY_ADMIN_TOKEN:-CHANGE_ME_WEEK1_ADMIN_TOKEN}
+      AUTH_CONTEXT_SIGNING_KEY: ${AUTH_CONTEXT_SIGNING_KEY:-MITHILPATEL}
+    ports:
+      - "8004:8004"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8004/healthz').status==200 else 1)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
   worker-service:
     build: ./worker-service
     depends_on:
@@ -222,6 +247,8 @@ services:
         condition: service_healthy
       kafka-init:
         condition: service_completed_successfully
+      graph-service:
+        condition: service_healthy
     environment:
       PORT: 8003
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-http://host.docker.internal:4318}
@@ -236,15 +263,28 @@ services:
       POSTGRES_PORT: 5432
       POSTGRES_USER: ${POSTGRES_USER:-brain}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brain}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-gemini-embedding-001}
       POSTGRES_DB: ${POSTGRES_DB:-brain}
+      GITHUB_APP_ID: ${GITHUB_APP_ID:-}
+      GITHUB_APP_PRIVATE_KEY: ${GITHUB_APP_PRIVATE_KEY:-}
+      GITHUB_APP_PRIVATE_KEY_PATH: /run/secrets/github_app.pem
+      GITHUB_INSTALLATION_ID: ${GITHUB_INSTALLATION_ID:-}
+      GITHUB_WEBHOOK_SECRET: ${GITHUB_WEBHOOK_SECRET:-}
+      INGESTION_MAX_CONCURRENT_FETCHES: ${INGESTION_MAX_CONCURRENT_FETCHES:-10}
+      INGESTION_MAX_FILE_SIZE_KB: ${INGESTION_MAX_FILE_SIZE_KB:-500}
+      INGESTION_BATCH_SIZE: ${INGESTION_BATCH_SIZE:-50}
+      GRAPH_SERVICE_URL: ${GRAPH_SERVICE_URL:-graph-service:50051}
+      SLACK_SIGNING_SECRET: ${SLACK_SIGNING_SECRET:-}
+      SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN:-}
+    volumes:  
+      - ${GITHUB_APP_PRIVATE_KEY_FILE:-./eng-brain.2026-03-20.private-key.pem}:/run/secrets/github_app.pem:ro
     ports:
       - "8003:8003"
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8003/healthz').status==200 else 1)\""]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 20s
 
 volumes:
   neo4j_data:

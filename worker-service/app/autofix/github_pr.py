@@ -55,6 +55,7 @@ class GitHubPRCreator:
         fix_type: str = "code_fix",
         pr_number: Optional[int] = None,
         base_branch: str = "main",
+        graph_node_ids: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
         Create a GitHub PR with autofix patches.
@@ -120,6 +121,7 @@ class GitHubPRCreator:
                 finding_id=finding_id,
                 patches=patches,
                 original_pr=pr_number,
+                graph_node_ids=graph_node_ids or [],
             )
 
             pr = self._create_pull_request(
@@ -223,6 +225,7 @@ class GitHubPRCreator:
         finding_id: str,
         patches: List[Dict[str, Any]],
         original_pr: Optional[int],
+        graph_node_ids: Optional[List[str]] = None,
     ) -> str:
         lines = [
             "## 🤖 KA-CHOW Autonomous Fix",
@@ -232,6 +235,18 @@ class GitHubPRCreator:
         ]
         if original_pr:
             lines.append(f"**Original PR:** #{original_pr}")
+
+        # Graph node traceability — links fix back to knowledge graph entities
+        if graph_node_ids:
+            lines.extend([
+                "",
+                "### 🔗 Knowledge Graph Traceability",
+                "",
+                "This fix is traced to the following nodes in the KA-CHOW knowledge graph:",
+                "",
+            ])
+            for node_id in graph_node_ids:
+                lines.append(f"- `{node_id}`")
 
         lines.extend([
             "",
@@ -252,7 +267,7 @@ class GitHubPRCreator:
             "> Please review all changes carefully before merging.",
             "",
             "### Confidence & Risk",
-            f"- **Confidence:** See individual patch details",
+            "- **Confidence:** See individual patch details",
             f"- **Generated at:** {datetime.now(timezone.utc).isoformat()}",
         ])
 

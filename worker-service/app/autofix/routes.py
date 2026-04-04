@@ -9,6 +9,7 @@ from ..dependencies import (
     get_db_conn, PG_CFG, auth_autofix_scoped,
     audit_event, enforce_repo_scope, AuthContext
 )
+from ..architecture.graph_integration import persist_autofix_graph_node
 
 router = APIRouter()
 
@@ -144,13 +145,36 @@ def autofix_apply(
         fix_type=request.fix_type,
         pr_number=request.pr_number,
         base_branch=request.base_branch,
+        graph_node_ids=result.get("_meta", {}).get("graph_node_ids", []),
     )
 
-    # Step 3: Update fix status
+    # Step 3: Update fix status + persist graph traceability
     fix_id = result.get("_meta", {}).get("fix_id")
+    graph_node_ids = result.get("_meta", {}).get("graph_node_ids", [])
     if fix_id and fix_id > 0:
         if pr_result.get("success"):
             _update_fix_status(PG_CFG, fix_id, "pr_created", pr_result.get("pr_url"))
+            # Trace fix back to Neo4j knowledge graph nodes
+            try:
+                from neo4j import GraphDatabase
+                import os
+                driver = GraphDatabase.driver(
+                    os.getenv("NEO4J_URI", "bolt://neo4j:7687"),
+                    auth=(os.getenv("NEO4J_USER", "neo4j"), os.getenv("NEO4J_PASSWORD", "testtest")),
+                )
+                persist_autofix_graph_node(
+                    driver,
+                    fix_id=fix_id,
+                    repo=request.repo,
+                    finding_id=request.finding.get("rule_id", "unknown"),
+                    fix_type=request.fix_type,
+                    graph_node_ids=graph_node_ids,
+                    pr_url=pr_result.get("pr_url", ""),
+                    confidence=float(result.get("confidence", 0)),
+                )
+                driver.close()
+            except Exception:
+                pass  # graph traceability is best-effort
         else:
             _update_fix_status(PG_CFG, fix_id, "failed")
 

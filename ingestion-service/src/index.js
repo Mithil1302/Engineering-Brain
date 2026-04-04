@@ -35,7 +35,7 @@ const config = {
     database: process.env.POSTGRES_DB || 'brain',
     max: Number(process.env.POSTGRES_POOL_MAX || 10),
   },
-  protoPath: path.join(process.cwd(), '..', 'proto', 'services.proto'),
+  protoPath: process.env.PROTO_PATH || path.join(process.cwd(), '..', 'proto', 'services.proto'),
 };
 
 const state = {

@@ -46,6 +46,20 @@ class ChainResult:
     error: Optional[str] = None
 
 
+@dataclass
+class ChunkResult:
+    """A retrieved and scored chunk for RAG pipeline with freshness scoring."""
+    chunk_id: int
+    content: str
+    source_ref: str
+    source_type: str
+    score: float            # raw vector similarity score
+    rerank_score: float     # LLM rerank score (0.0-1.0)
+    metadata: Dict[str, Any]
+    freshness_score: float = 1.0  # recency multiplier (1.2 for <7d, 1.1 for <30d, 1.0 for <90d, 0.9 for older)
+    final_score: float = 0.0      # weighted combination: (rerank_score * 0.7) + (freshness_score * 0.3)
+
+
 # ---------------------------------------------------------------------------
 # RAG Chain — Retrieve → Rank → Generate
 # ---------------------------------------------------------------------------
@@ -71,14 +85,16 @@ class RAGChain:
         llm: LLMClient,
         store: EmbeddingStore,
         top_k: int = 10,
-        rerank: bool = True,
         rerank_top_k: int = 5,
+        score_threshold: float = 0.3,
+        pg_cfg: Optional[Dict[str, Any]] = None,
     ):
         self._llm = llm
         self._store = store
         self._top_k = top_k
-        self._rerank = rerank
         self._rerank_top_k = rerank_top_k
+        self.score_threshold = score_threshold
+        self._pg_cfg = pg_cfg
 
     def run(
         self,
@@ -87,6 +103,10 @@ class RAGChain:
         evidence: Optional[Dict[str, Any]] = None,
         source_types: Optional[List[str]] = None,
         system_prompt: Optional[str] = None,
+        intent: str = "general",
+        session_id: str = "",
+        repo: str = "",
+        tone_instruction: str = "",
     ) -> ChainResult:
         """Execute the full RAG pipeline."""
         steps: List[ChainStep] = []
@@ -109,17 +129,33 @@ class RAGChain:
             latency_ms=round((time.monotonic() - t0) * 1000, 1),
         ))
 
-        # --- Step 2: Re-rank (optional) ------------------------------------
-        if self._rerank and len(results) > self._rerank_top_k:
-            t0 = time.monotonic()
-            results = self._rerank_chunks(query, results)
-            steps.append(ChainStep(
-                step_name="rerank",
-                input_summary=f"ranking {len(results)} chunks",
-                output_summary=f"kept top {min(len(results), self._rerank_top_k)}",
-                latency_ms=round((time.monotonic() - t0) * 1000, 1),
-            ))
-            results = results[: self._rerank_top_k]
+        # --- Step 2: Re-rank ------------------------------------------------
+        t0 = time.monotonic()
+        results = self._rerank_chunks(query, results)
+        steps.append(ChainStep(
+            step_name="rerank",
+            input_summary=f"ranking {len(results)} chunks",
+            output_summary=f"kept top {min(len(results), self._rerank_top_k)}",
+            latency_ms=round((time.monotonic() - t0) * 1000, 1),
+        ))
+        results = results[: self._rerank_top_k]
+
+        # --- Step 2.5: Apply freshness scoring ------------------------------
+        t0 = time.monotonic()
+        scored = self._apply_freshness_scoring(results)
+        steps.append(ChainStep(
+            step_name="freshness_score",
+            input_summary=f"scoring {len(scored)} chunks",
+            output_summary=f"scores range [{scored[-1].final_score:.2f}, {scored[0].final_score:.2f}]" if scored else "no chunks",
+            latency_ms=round((time.monotonic() - t0) * 1000, 1),
+        ))
+
+        # --- Step 2.6: Apply threshold filtering ----------------------------
+        # Filter by final_score threshold, then ensure minimum of 3 chunks
+        filtered = [c for c in scored if c.final_score >= self.score_threshold]
+        if len(filtered) < 3:
+            filtered = scored[:3]
+        results = filtered
 
         # --- Step 3: Generate answer ----------------------------------------
         t0 = time.monotonic()
@@ -140,10 +176,13 @@ class RAGChain:
             evidence=evidence or {},
         )
 
+        # Build system prompt with tone instruction
+        final_system_prompt = system_prompt or prompt_cls.build_system_prompt(tone_instruction)
+
         try:
             llm_resp = self._llm.generate(
                 user_prompt,
-                system_prompt=system_prompt or prompt_cls.system_prompt,
+                system_prompt=final_system_prompt,
                 json_mode=True,
                 json_schema=prompt_cls.response_schema(),
                 use_cache=False,  # answers are context-dependent
@@ -169,6 +208,18 @@ class RAGChain:
 
         total_ms = round((time.monotonic() - t_start) * 1000, 1)
         total_tok = sum(s.tokens_used for s in steps)
+
+        # Log QA event (non-blocking)
+        self._log_qa_event(
+            question=query,
+            intent=intent,
+            session_id=session_id,
+            repo=repo,
+            chunk_count=len(filtered),
+            top_chunk_source=filtered[0].source_ref if filtered else None,
+            had_rag_results=len(filtered) > 0,
+            confidence=float(output.get("confidence", 0.0)),
+        )
 
         return ChainResult(
             output=output,
@@ -202,13 +253,110 @@ class RAGChain:
             )
             if isinstance(resp, list):
                 reranked = []
-                for idx in resp:
+                for rank_position, idx in enumerate(resp):
                     if isinstance(idx, int) and 0 <= idx < len(chunks):
-                        reranked.append(chunks[idx])
-                return reranked if reranked else chunks
+                        chunk = chunks[idx]
+                        # Set rerank_score based on position: 1.0 for first, decreasing linearly
+                        chunk.rerank_score = 1.0 - (rank_position / max(len(resp), 1))
+                        reranked.append(chunk)
+                if reranked:
+                    return reranked
         except Exception:
             pass
+        
+        # Fallback: use original order and set rerank_score = score
+        for chunk in chunks:
+            chunk.rerank_score = chunk.score
         return chunks
+
+    def _apply_freshness_scoring(self, chunks: List[SearchResult]) -> List[SearchResult]:
+        """
+        Compute freshness_score per chunk and calculate final_score.
+        
+        Freshness: 1.2 (≤7d), 1.1 (≤30d), 1.0 (≤90d), 0.9 (>90d).
+        Final: (rerank_score * 0.7) + (freshness_score * 0.3).
+        
+        Sorts descending by final_score.
+        """
+        from datetime import datetime, timezone
+        
+        now = datetime.now(timezone.utc)
+        
+        for chunk in chunks:
+            # Extract last_modified from metadata
+            last_modified = chunk.metadata.get("last_modified")
+            
+            if last_modified is None:
+                # No timestamp available, use neutral score
+                chunk.freshness_score = 1.0
+            else:
+                # Handle both string ISO format and datetime objects
+                if isinstance(last_modified, str):
+                    last_modified = datetime.fromisoformat(last_modified)
+                
+                # Handle timezone-naive datetimes
+                if last_modified.tzinfo is None:
+                    last_modified = last_modified.replace(tzinfo=timezone.utc)
+                
+                # Compute age in days
+                age_days = (now - last_modified).days
+                
+                # Apply freshness thresholds (inclusive on lower bound)
+                if age_days <= 7:
+                    chunk.freshness_score = 1.2
+                elif age_days <= 30:
+                    chunk.freshness_score = 1.1
+                elif age_days <= 90:
+                    chunk.freshness_score = 1.0
+                else:  # age_days > 90
+                    chunk.freshness_score = 0.9
+            
+            # Compute final weighted score
+            chunk.final_score = (chunk.rerank_score * 0.7) + (chunk.freshness_score * 0.3)
+        
+        # Sort descending by final_score
+        scored = sorted(chunks, key=lambda c: c.final_score, reverse=True)
+        
+        return scored
+
+    def _log_qa_event(
+        self,
+        question: str,
+        intent: str,
+        session_id: str,
+        repo: str,
+        chunk_count: int,
+        top_chunk_source: Optional[str],
+        had_rag_results: bool,
+        confidence: float,
+    ) -> None:
+        """
+        Non-blocking INSERT to meta.qa_event_log.
+        Failure is logged at WARNING level and never surfaces to the caller.
+        """
+        if not self._pg_cfg:
+            return  # No database config, skip logging
+        
+        try:
+            import psycopg2
+            
+            # Parse sub_intent from dot-notation
+            parts = intent.split(".", 1)
+            coarse = parts[0]
+            sub = parts[1] if len(parts) > 1 else None
+            
+            with psycopg2.connect(**self._pg_cfg) as conn:
+                with conn.cursor() as cur:
+                    cur.execute("""
+                        INSERT INTO meta.qa_event_log
+                        (question, intent, sub_intent, confidence, chunk_count,
+                         top_chunk_source, had_rag_results, session_id, repo, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+                    """, (question, coarse, sub, confidence, chunk_count,
+                          top_chunk_source, had_rag_results, session_id, repo))
+                conn.commit()
+        except Exception as e:
+            log.warning(f"QA event log write failed: {e}")
 
 
 # ---------------------------------------------------------------------------
