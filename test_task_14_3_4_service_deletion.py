@@ -24,9 +24,10 @@ def run_cmd(cmd: list[str], timeout: int = 120) -> tuple[int, str, str]:
 
 
 def active_service_count(repo: str) -> int:
+    """Count active services from meta.graph_nodes (populated by ingestion pipeline)."""
     sql = (
-        "SELECT COUNT(*) FROM meta.architecture_nodes "
-        f"WHERE repo = '{repo}' AND node_type = 'service' AND valid_to IS NULL;"
+        "SELECT COUNT(*) FROM meta.graph_nodes "
+        f"WHERE repo = '{repo}' AND node_type = 'service';"
     )
     code, out, _ = run_cmd(["docker", "compose", "exec", "-T", "postgres", "psql", "-U", "brain", "-d", "brain", "-tAc", sql], timeout=60)
     if code != 0 or not out:
